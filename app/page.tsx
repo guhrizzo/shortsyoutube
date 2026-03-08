@@ -249,7 +249,6 @@ export default function HomePage() {
 
           {/* INPUT */}
           <div className="max-w-3xl mx-auto relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000" />
             
             <div className="relative flex flex-col md:flex-row gap-3 bg-[#0a0a0f]/90 backdrop-blur border border-white/10 p-2 rounded-2xl shadow-2xl shadow-purple-900/20 hover:border-purple-500/30 transition-all duration-300">
               
