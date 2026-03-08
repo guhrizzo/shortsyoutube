@@ -155,22 +155,22 @@ export default function HomePage() {
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[128px] animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/5 rounded-full blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-purple-900/5 rounded-full blur-[100px]" />
       </div>
 
       {/* NAVBAR */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all border-b border-white/15 duration-500 ${
         isScrolled 
-          ? "bg-[#030305]/90 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-purple-900/10" 
+          ? "bg-[#030305]/90   backdrop-blur-xl  shadow-2xl shadow-purple-900/10" 
           : "bg-transparent"
       }`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/25 group-hover:shadow-purple-600/40 transition-all duration-300 group-hover:scale-105">
+            <div className="relative w-10 h-10 bg-linear-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/25 group-hover:shadow-purple-600/40 transition-all duration-300 group-hover:scale-105">
               <Scissors className="w-5 h-5 text-white transform group-hover:rotate-12 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
+              <div className="absolute inset-0 bg-linear-to-br from-purple-400 to-purple-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
             </div>
-            <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            <span className="font-bold text-xl tracking-tight bg-linear-to-r from-white to-gray-400 bg-clip-text text-transparent">
               ClipAI
             </span>
           </div>
@@ -223,7 +223,7 @@ export default function HomePage() {
 
       {/* HERO */}
       <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent" />
         
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
           
@@ -237,7 +237,7 @@ export default function HomePage() {
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-8 leading-[1.1] tracking-tight">
             Transforme vídeos em
-            <span className="block mt-2 bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent animate-gradient-x">
+            <span className="block mt-2 bg-linear-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent animate-gradient-x">
               cortes virais
             </span>
           </h1>
@@ -274,7 +274,7 @@ export default function HomePage() {
               <button
                 onClick={handleAnalyze}
                 disabled={loading}
-                className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 transition-all duration-300 px-8 py-4 rounded-xl font-semibold flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-600/25 group"
+                className="relative overflow-hidden bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 transition-all duration-300 px-8 py-4 rounded-xl font-semibold flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-600/25 group"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 
@@ -327,7 +327,7 @@ export default function HomePage() {
               { value: "10x", label: "Mais Rápido" },
             ].map((stat, index) => (
               <div key={index} className="text-center group">
-                <div className="text-2xl md:text-3xl font-bold bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
+                <div className="text-2xl md:text-3xl font-bold bg-linear-to-b from-white to-gray-400 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">
                   {stat.value}
                 </div>
                 <div className="text-xs md:text-sm text-gray-500 mt-1">{stat.label}</div>
@@ -346,7 +346,7 @@ export default function HomePage() {
       {analysis && (
         <section
           id="results"
-          className="relative py-20 bg-gradient-to-b from-purple-900/10 via-[#030305] to-[#030305]"
+          className="relative py-20 bg-linear-to-b from-purple-900/10 via-[#030305] to-[#030305]"
         >
           <div className="max-w-7xl mx-auto px-6">
             
@@ -355,7 +355,7 @@ export default function HomePage() {
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                 <span className="text-xs font-medium text-green-400">Análise Completa</span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-linear-to-r from-white to-gray-400 bg-clip-text text-transparent">
                 Momentos Identificados
               </h2>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
@@ -432,7 +432,7 @@ export default function HomePage() {
 
       {/* FEATURES */}
       <section id="features" className="relative py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent via-purple-900/5 to-transparent" />
         
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
@@ -477,7 +477,7 @@ export default function HomePage() {
               { icon: Shield, title: "Seguro", desc: "Seus dados protegidos" },
               { icon: Clock, title: "24/7", desc: "Disponível sempre" },
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-4 p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-purple-500/20 transition-all duration-300 group">
+              <div key={i} className="flex items-start gap-4 p-6 rounded-2xl bg-white/2 border border-white/5 hover:bg-white/4 hover:border-purple-500/20 transition-all duration-300 group">
                 <div className="w-10 h-10 rounded-lg bg-purple-600/10 flex items-center justify-center group-hover:bg-purple-600/20 transition-colors">
                   <item.icon className="w-5 h-5 text-purple-400" />
                 </div>
@@ -503,7 +503,7 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-12 relative">
             {/* Connection Line */}
-            <div className="hidden md:block absolute top-1/4 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-600/0 via-purple-600/50 to-purple-600/0" />
+            <div className="hidden md:block absolute top-1/4 left-0 right-0 h-0.5 bg-linear-to-r from-purple-600/0 via-purple-600/50 to-purple-600/0" />
 
             {[
               {
@@ -527,7 +527,7 @@ export default function HomePage() {
             ].map((item, i) => (
               <div key={i} className="relative text-center group">
                 <div className="relative inline-flex mb-6">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-600 to-purple-800 flex items-center justify-center shadow-2xl shadow-purple-600/30 group-hover:scale-110 transition-transform duration-300">
+                  <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-purple-600 to-purple-800 flex items-center justify-center shadow-2xl shadow-purple-600/30 group-hover:scale-110 transition-transform duration-300">
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
                   <div className="absolute -top-2 -right-2 w-8 h-8 bg-white text-black rounded-full flex items-center justify-center font-bold text-sm shadow-lg">
@@ -543,7 +543,7 @@ export default function HomePage() {
       </section>
 
       {/* SOCIAL PROOF */}
-      <section className="py-20 border-y border-white/5 bg-white/[0.01]">
+      <section className="py-20 border-y border-white/5 bg-white/1">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
             <p className="text-gray-500 text-sm uppercase tracking-wider mb-2">Confiado por criadores de conteúdo</p>
@@ -560,7 +560,7 @@ export default function HomePage() {
 
       {/* CTA SECTION */}
       <section className="py-32 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 to-pink-900/20" />
+        <div className="absolute inset-0 bg-linear-to-r from-purple-900/20 to-pink-900/20" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
         
         <div className="relative max-w-4xl mx-auto px-6 text-center">
@@ -603,7 +603,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-12 mb-16">
             <div className="col-span-2">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-linear-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center">
                   <Scissors className="w-5 h-5 text-white" />
                 </div>
                 <span className="font-bold text-2xl">ClipAI</span>
@@ -672,13 +672,13 @@ function FeatureCard({
   return (
     <div 
       ref={ref}
-      className={`group relative p-8 rounded-3xl bg-white/[0.02] border border-white/10 hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 ${
+      className={`group relative p-8 rounded-3xl bg-white/2 border border-white/10 hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity duration-500`} />
+      <div className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity duration-500`} />
       
-      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+      <div className={`w-14 h-14 rounded-2xl bg-linear-to-br ${gradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
         <Icon className="w-7 h-7 text-white" />
       </div>
       
