@@ -177,25 +177,25 @@ export default function HomePage() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <button onClick={() => scrollToSection("features")} className="text-sm text-gray-400 hover:text-white transition-colors relative group">
+            <button onClick={() => scrollToSection("features")} className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer relative group">
               Recursos
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full transition-all duration-300" />
             </button>
-            <button onClick={() => scrollToSection("how-it-works")} className="text-sm text-gray-400 hover:text-white transition-colors relative group">
+            <button onClick={() => scrollToSection("how-it-works")} className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer relative group">
               Como Funciona
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full transition-all duration-300" />
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full  transition-all duration-300" />
             </button>
-            <button onClick={() => scrollToSection("pricing")} className="text-sm text-gray-400 hover:text-white transition-colors relative group">
+            <button onClick={() => scrollToSection("pricing")} className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer relative group">
               Preços
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full transition-all duration-300" />
             </button>
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <button className="px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors">
+            <button className="px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors cursor-pointer">
               Entrar
             </button>
-            <button className="px-5 py-2.5 bg-white text-black rounded-full text-sm font-semibold hover:bg-gray-200 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-white/10">
+            <button className="px-5 py-2.5 bg-white text-black rounded-full text-sm font-semibold hover:bg-gray-200 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-white/10 cursor-pointer">
               Começar Grátis
             </button>
           </div>
@@ -274,7 +274,7 @@ export default function HomePage() {
               <button
                 onClick={handleAnalyze}
                 disabled={loading}
-                className="relative overflow-hidden bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 transition-all duration-300 px-8 py-4 rounded-xl font-semibold flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-600/25 group"
+                className="relative overflow-hidden bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 transition-all duration-300 px-8 py-4 rounded-xl font-semibold flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-600/25 group cursor-pointer"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                 
@@ -407,7 +407,7 @@ export default function HomePage() {
                     ))}
                   </div>
 
-                  <button className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]">
+                  <button className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg shadow-purple-600/25">
                     <Download className="w-4 h-4" />
                     Exportar Todos
                   </button>
@@ -415,11 +415,11 @@ export default function HomePage() {
 
                 {/* Quick Actions */}
                 <div className="grid grid-cols-2 gap-3">
-                  <button className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                  <button className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all duration-300 group cursor-pointer">
                     <Copy className="w-5 h-5 text-gray-400 group-hover:text-white mx-auto mb-2 transition-colors" />
                     <span className="text-xs text-gray-400 group-hover:text-white">Copiar Link</span>
                   </button>
-                  <button className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all duration-300 group">
+                  <button className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all duration-300 group cursor-pointer">
                     <Share2 className="w-5 h-5 text-gray-400 group-hover:text-white mx-auto mb-2 transition-colors" />
                     <span className="text-xs text-gray-400 group-hover:text-white">Compartilhar</span>
                   </button>
@@ -574,12 +574,12 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button 
               onClick={() => inputRef.current?.focus()}
-              className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:bg-gray-200 transition-all duration-300 hover:scale-105 shadow-2xl shadow-white/10 flex items-center justify-center gap-2"
+              className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:bg-gray-200 transition-all duration-300 hover:scale-105 shadow-2xl shadow-white/10 flex items-center justify-center gap-2 cursor-pointer"
             >
               <Wand2 className="w-5 h-5" />
               Experimentar Grátis
             </button>
-            <button className="px-8 py-4 bg-white/10 border border-white/20 rounded-full font-semibold text-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm">
+            <button className="px-8 py-4 bg-white/10 border border-white/20 rounded-full font-semibold text-lg hover:bg-white/20 transition-all duration-300 backdrop-blur-sm cursor-pointer flex items-center justify-center gap-2">
               Ver Demonstração
             </button>
           </div>
@@ -625,18 +625,15 @@ export default function HomePage() {
               <ul className="space-y-3 text-gray-400">
                 <li><a href="#" className="hover:text-purple-400 transition-colors">Recursos</a></li>
                 <li><a href="#" className="hover:text-purple-400 transition-colors">Preços</a></li>
-                <li><a href="#" className="hover:text-purple-400 transition-colors">API</a></li>
-                <li><a href="#" className="hover:text-purple-400 transition-colors">Integrações</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-bold mb-4 text-white">Suporte</h4>
               <ul className="space-y-3 text-gray-400">
-                <li><a href="#" className="hover:text-purple-400 transition-colors">Central de Ajuda</a></li>
                 <li><a href="#" className="hover:text-purple-400 transition-colors">Contato</a></li>
-                <li><a href="#" className="hover:text-purple-400 transition-colors">Status</a></li>
-                <li><a href="#" className="hover:text-purple-400 transition-colors">Blog</a></li>
+                
+                
               </ul>
             </div>
           </div>
