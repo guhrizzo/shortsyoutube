@@ -1,0 +1,108 @@
+{
+  "name": "ClipAI - Transforme Vídeos em Cortes Virais",
+  "short_name": "ClipAI",
+  "description": "IA que analisa vídeos do YouTube e cria automaticamente Shorts, Reels e TikToks virais",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#030305",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["productivity", "video", "social", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Dashboard do ClipAI mostrando análise de vídeo"
+    },
+    {
+      "src": "/screenshot-narrow.jpg",
+      "sizes": "750x1334",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Interface mobile do ClipAI"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Novo Corte",
+      "short_name": "Cortar",
+      "description": "Iniciar nova análise de vídeo",
+      "url": "/?action=new",
+      "icons": [{ "src": "/shortcut-cut.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Meus Vídeos",
+      "short_name": "Vídeos",
+      "description": "Ver histórico de análises",
+      "url": "/videos",
+      "icons": [{ "src": "/shortcut-videos.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.clipai.app",
+      "id": "com.clipai.app"
+    },
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/app/clipai/id123456789"
+    }
+  ],
+  "prefer_related_applications": false
+}
