@@ -1,188 +1,108 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Download, Loader2 } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { VideoPreview } from "./VideoPreview";
-import { Timeline } from "./Timeline";
-import { ViralScore } from "./ViralScore";
-import { HookSuggestions } from "./HookSuggestions";
-import { ExportSettings } from "./ExportSettings";
-import { VideoAnalysis, ExportSettings as ExportSettingsType, ProcessingStatus } from "@/app/types";
-import { extractYouTubeId, calculateViralScore } from "@/app/lib/utils";
+import { useEffect, useRef } from "react";
+import { Play, Pause } from "lucide-react";
 
-interface VideoEditorProps {
-  videoUrl: string;
-  analysis: VideoAnalysis;
+interface VideoPreviewProps {
+  videoId: string;
+  currentTime: number;
+  duration: number;
+  isPlaying: boolean;
+  aspectRatio: "9:16" | "1:1" | "16:9";
+  onPlayPause: () => void;
+  onSeek: (time: number) => void;
 }
 
-export function VideoEditor({ videoUrl, analysis }: VideoEditorProps) {
-  const videoId = extractYouTubeId(videoUrl) || "";
+export function VideoPreview({
+  videoId,
+  currentTime,
+  duration,
+  isPlaying,
+  aspectRatio,
+  onPlayPause,
+  onSeek,
+}: VideoPreviewProps) {
 
-  const [currentTime, setCurrentTime] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [startTime, setStartTime] = useState(0);
-  const [endTime, setEndTime] = useState(Math.min(30, analysis.duration));
-  const [selectedHookId, setSelectedHookId] = useState<string | null>(null);
-  const [aspectRatio, setAspectRatio] = useState<"9:16" | "1:1" | "16:9">("9:16");
-  const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>({
-    status: "idle",
-    progress: 0,
-    message: "",
-  });
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  const [exportSettings, setExportSettings] = useState<ExportSettingsType>({
-    platform: "youtube_shorts",
-    quality: "1080p",
-    aspectRatio: "9:16",
-    autoCaptions: true,
-    dynamicZoom: true,
-    removeSilence: true,
-    addBackgroundMusic: false,
-  });
-
-  // Update aspect ratio when platform changes
+  // Atualiza tempo do vídeo
   useEffect(() => {
-    setAspectRatio(exportSettings.aspectRatio);
-  }, [exportSettings.aspectRatio]);
+    if (!iframeRef.current) return;
 
-  const handleRangeChange = (start: number, end: number) => {
-    setStartTime(start);
-    setEndTime(end);
-    setCurrentTime(start);
-  };
+    iframeRef.current.contentWindow?.postMessage(
+      JSON.stringify({
+        event: "command",
+        func: "seekTo",
+        args: [currentTime, true],
+      }),
+      "*"
+    );
+  }, [currentTime]);
 
-  const handleSelectHook = (hook: typeof analysis.hooks[0]) => {
-    setSelectedHookId(hook.id);
-    setStartTime(hook.startTime);
-    setEndTime(hook.endTime);
-    setCurrentTime(hook.startTime);
-  };
+  // Play / Pause
+  useEffect(() => {
+    if (!iframeRef.current) return;
 
-  const handleExport = async () => {
-    setProcessingStatus({
-      status: "processing",
-      progress: 0,
-      message: "Iniciando processamento...",
-    });
+    iframeRef.current.contentWindow?.postMessage(
+      JSON.stringify({
+        event: "command",
+        func: isPlaying ? "playVideo" : "pauseVideo",
+      }),
+      "*"
+    );
+  }, [isPlaying]);
 
-    // Simulate processing steps
-    const steps = [
-      { progress: 20, message: "Extraindo segmento do vídeo..." },
-      { progress: 40, message: "Aplicando formato vertical..." },
-      { progress: 60, message: "Gerando legendas automáticas..." },
-      { progress: 80, message: "Aplicando otimizações virais..." },
-      { progress: 100, message: "Finalizando..." },
-    ];
-
-    for (const step of steps) {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setProcessingStatus({
-        status: "processing",
-        progress: step.progress,
-        message: step.message,
-      });
+  function getAspectClass() {
+    switch (aspectRatio) {
+      case "9:16":
+        return "aspect-[9/16]";
+      case "1:1":
+        return "aspect-square";
+      case "16:9":
+        return "aspect-video";
     }
-
-    setProcessingStatus({
-      status: "completed",
-      progress: 100,
-      message: "Corte gerado com sucesso!",
-      downloadUrl: "#", // In real app, this would be the actual download URL
-    });
-  };
-
-  const selectedDuration = endTime - startTime;
-    const viralScore = calculateViralScore(selectedDuration, analysis.hooks);
+  }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Preview & Timeline */}
-        <div className="lg:col-span-2 space-y-4">
-          <VideoPreview
-            videoId={videoId}
-            currentTime={currentTime}
-            duration={analysis.duration}
-            isPlaying={isPlaying}
-            onPlayPause={() => setIsPlaying(!isPlaying)}
-            onSeek={setCurrentTime}
-            aspectRatio={aspectRatio}
-          />
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
 
-          <Timeline
-            duration={analysis.duration}
-            startTime={startTime}
-            endTime={endTime}
-            currentTime={currentTime}
-            onRangeChange={handleRangeChange}
-            onSeek={setCurrentTime}
-          />
-        </div>
+      {/* PLAYER */}
+      <div
+        className={`relative overflow-hidden rounded-xl ${getAspectClass()}`}
+      >
 
-        {/* Right Column - Settings & Export */}
-        <div className="space-y-4">
-          <ViralScore
-            score={viralScore}
-            metrics={{
-              retention: Math.min(viralScore + 5, 98),
-              engagement: Math.min(viralScore - 3, 95),
-              trendAlignment: Math.min(viralScore + 2, 92),
-              shareability: Math.min(viralScore - 5, 88),
-            }}
-          />
+        <iframe
+          ref={iframeRef}
+          className="absolute inset-0 w-full h-full"
+          src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1`}
+          allow="autoplay; encrypted-media"
+        />
 
-          <HookSuggestions
-            hooks={analysis.hooks}
-            selectedHookId={selectedHookId}
-            onSelectHook={handleSelectHook}
-          />
-
-          <ExportSettings
-            settings={exportSettings}
-            onSettingsChange={setExportSettings}
-          />
-
-          <Button
-            onClick={handleExport}
-            disabled={processingStatus.status === "processing"}
-            variant="gradient"
-            className="w-full py-6 text-lg font-bold neon-glow"
-          >
-            {processingStatus.status === "processing" ? (
-              <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                {processingStatus.message}
-              </>
-            ) : processingStatus.status === "completed" ? (
-              <>
-                <Download className="w-5 h-5 mr-2" />
-                Baixar Corte
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5 mr-2" />
-                Gerar Corte Viral
-              </>
-            )}
-          </Button>
-
-          {processingStatus.status === "processing" && (
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs text-gray-400">
-                <span>{processingStatus.message}</span>
-                <span>{processingStatus.progress}%</span>
-              </div>
-              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-primary to-secondary transition-all duration-300"
-                  style={{ width: `${processingStatus.progress}%` }}
-                />
-              </div>
-            </div>
+        {/* OVERLAY CONTROLS */}
+        <button
+          onClick={onPlayPause}
+          className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40 transition"
+        >
+          {isPlaying ? (
+            <Pause className="w-14 h-14 text-white" />
+          ) : (
+            <Play className="w-14 h-14 text-white" />
           )}
-        </div>
+        </button>
+      </div>
+
+      {/* TIME INFO */}
+      <div className="flex justify-between text-xs text-gray-400 mt-3">
+        <span>{formatTime(currentTime)}</span>
+        <span>{formatTime(duration)}</span>
       </div>
     </div>
   );
+}
+
+function formatTime(time: number) {
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
