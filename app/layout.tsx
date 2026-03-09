@@ -141,18 +141,16 @@ export const metadata: Metadata = {
     },
   },
 
-  // Ícones e manifesto PWA
+  // Ícones - NOMES CORRETOS baseados na sua estrutura
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
     ],
-    shortcut: ["/shortcut-icon.png"],
+    shortcut: ["/favicon.ico"],
     apple: [
-      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
-      { url: "/apple-touch-icon.png", sizes: "180x180" },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
     other: [
       {
@@ -160,30 +158,17 @@ export const metadata: Metadata = {
         url: "/safari-pinned-tab.svg",
         color: "#8b5cf6",
       },
-      {
-        rel: "apple-touch-startup-image",
-        url: "/apple-splash-2048-2732.jpg",
-        media:
-          "(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)",
-      },
     ],
   },
 
-  // Manifesto PWA
-  manifest: "/manifest.json",
+  // Manifesto PWA - NOME CORRETO: site.webmanifest
+  manifest: "/site.webmanifest",
 
   // Apple Web App
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "ClipAI",
-    startupImage: [
-      {
-        url: "/apple-splash-2048-2732.jpg",
-        media:
-          "(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)",
-      },
-    ],
   },
 
   // Outros metadados importantes
@@ -243,7 +228,7 @@ const structuredData = {
       url: "https://clipai.com",
       logo: {
         "@type": "ImageObject",
-        url: "https://clipai.com/logo.png",
+        url: "https://clipai.com/android-chrome-512x512.png",
         width: 512,
         height: 512,
       },
@@ -356,7 +341,7 @@ const structuredData = {
       ],
       screenshot: {
         "@type": "ImageObject",
-        url: "https://clipai.com/screenshot.jpg",
+        url: "https://clipai.com/screenshot-wide.jpg",
       },
       softwareVersion: "2.0",
       downloadUrl: "https://clipai.com/download",
@@ -446,10 +431,9 @@ export default function RootLayout({
         {/* Preload recursos críticos */}
         <link
           rel="preload"
-          href="/fonts/inter-var.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
+          href="/android-chrome-192x192.png"
+          as="image"
+          type="image/png"
         />
 
         {/* Meta tags adicionais de segurança e performance */}
@@ -470,9 +454,6 @@ export default function RootLayout({
         <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-        {/* PWA */}
-        <link rel="manifest" href="/manifest.json" />
-        
         {/* Schema.org JSON-LD */}
         <script
           type="application/ld+json"
