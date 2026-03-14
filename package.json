@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@google/generative-ai": "^0.24.1",
     "clsx": "^2.1.1",
     "firebase": "^12.10.0",

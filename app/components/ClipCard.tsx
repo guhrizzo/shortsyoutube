@@ -3,16 +3,11 @@
 // app/components/ClipCard.tsx
 import { useState } from "react";
 import {
-  Play, Scissors, Copy, Download, Share2, Zap,
+  Play, Scissors, Copy, Share2, Zap,
   ChevronDown, ChevronUp, Instagram, Youtube,
-  Loader2, CheckCircle2, AlertCircle, ExternalLink
 } from "lucide-react";
 import { Clip } from "@/app/types";
-import { useAuth } from "@/app/context/AuthContext";
-import { db } from "@/app/lib/firebase";
-import { doc, updateDoc, increment } from "firebase/firestore";
-
-const COIN_COST = 2;
+import { VideoDownloader } from "./VideoDownloader";
 
 interface ClipCardProps {
   clip: Clip;
@@ -63,159 +58,6 @@ function ScoreRing({ score }: { score: number }) {
   );
 }
 
-// ── Download Button integrado ────────────────────────────────────
-function DownloadSection({ clip, videoId }: { clip: Clip; videoId: string }) {
-  const { user, profile, refreshProfile } = useAuth();
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [error, setError] = useState("");
-  const [downloadUrl, setDownloadUrl] = useState("");
-  const [quality, setQuality] = useState("");
-
-  async function handleDownload() {
-    if (!user) {
-      setError("Faça login para baixar.");
-      setStatus("error");
-      return;
-    }
-    if ((profile?.coins ?? 0) < COIN_COST) {
-      setError(`Você precisa de ${COIN_COST} coins para baixar.`);
-      setStatus("error");
-      return;
-    }
-
-    try {
-      setStatus("loading");
-      setError("");
-
-      const res = await fetch("/api/download-clip", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          videoId,
-          startTime: clip.startTime,
-          endTime: clip.endTime,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
-      // Debita coins
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, { coins: increment(-COIN_COST) });
-      await refreshProfile();
-
-      setDownloadUrl(data.downloadUrl);
-      setQuality(data.quality);
-      setStatus("success");
-
-      // Abre download
-      const a = document.createElement("a");
-      a.href = data.downloadUrl;
-      a.download = data.filename;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.click();
-
-    } catch (err: any) {
-      setError(err.message || "Erro ao baixar. Tente novamente.");
-      setStatus("error");
-    }
-  }
-
-  if (status === "success") {
-    return (
-      <div className="space-y-2 p-3 border-t border-white/5">
-        <div className="flex items-center gap-2 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-xl text-green-400 text-xs">
-          <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>Download iniciado! ({quality})</span>
-        </div>
-        <div className="flex gap-2">
-          <a
-            href={downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs text-gray-300 hover:text-white transition"
-          >
-            <ExternalLink className="w-3 h-3" />
-            Abrir link
-          </a>
-          <button
-            onClick={(e) => { e.stopPropagation(); setStatus("idle"); }}
-            className="flex-1 flex items-center justify-center py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs text-gray-300 hover:text-white transition"
-          >
-            Baixar novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="p-3 border-t border-white/5 space-y-2">
-      {status === "error" && (
-        <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs">
-          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span className="flex-1">{error}</span>
-          <button
-            onClick={(e) => { e.stopPropagation(); setStatus("idle"); setError(""); }}
-            className="underline hover:no-underline whitespace-nowrap"
-          >
-            Tentar novamente
-          </button>
-        </div>
-      )}
-
-      <div className="flex gap-2">
-        {/* Selecionar */}
-        <button
-          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-xs font-semibold transition"
-          onClick={(e) => { e.stopPropagation(); }}
-        >
-          <Scissors className="w-3.5 h-3.5" />
-          Selecionar
-        </button>
-
-        {/* Download */}
-        <button
-          onClick={(e) => { e.stopPropagation(); handleDownload(); }}
-          disabled={status === "loading"}
-          title={`Baixar corte (${COIN_COST} 🪙)`}
-          className="flex items-center justify-center gap-1.5 px-3 py-2 bg-gradient-to-r from-purple-600/40 to-pink-600/40 hover:from-purple-600 hover:to-pink-600 border border-purple-500/30 rounded-lg text-xs font-semibold transition-all disabled:opacity-50"
-        >
-          {status === "loading" ? (
-            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-          ) : (
-            <Download className="w-3.5 h-3.5" />
-          )}
-          {status === "loading" ? "..." : `Baixar · 🪙${COIN_COST}`}
-        </button>
-
-        {/* Copy */}
-        <CopyButton videoId={videoId} startTime={clip.startTime} />
-
-        {/* Share */}
-        <a
-          href={`https://youtu.be/${videoId}?t=${Math.floor(clip.startTime)}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition"
-          title="Abrir no YouTube"
-        >
-          <Share2 className="w-4 h-4 text-gray-400" />
-        </a>
-      </div>
-
-      <p className="text-center text-xs text-gray-600">
-        Saldo: <span className="text-yellow-400">🪙 {profile?.coins ?? 0} coins</span>
-      </p>
-    </div>
-  );
-}
-
-// ── Copy button ──────────────────────────────────────────────────
 function CopyButton({ videoId, startTime }: { videoId: string; startTime: number }) {
   const [copied, setCopied] = useState(false);
   const link = `https://youtu.be/${videoId}?t=${Math.floor(startTime)}`;
@@ -238,7 +80,6 @@ function CopyButton({ videoId, startTime }: { videoId: string; startTime: number
   );
 }
 
-// ── ClipCard principal ───────────────────────────────────────────
 export function ClipCard({ clip, videoId, isActive, onSelect }: ClipCardProps) {
   const [expanded, setExpanded] = useState(false);
   const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
@@ -340,8 +181,30 @@ export function ClipCard({ clip, videoId, isActive, onSelect }: ClipCardProps) {
         ))}
       </div>
 
-      {/* Actions + Download */}
-      <DownloadSection clip={clip} videoId={videoId} />
+      {/* Quick actions */}
+      <div className="flex gap-2 px-3 pt-3 pb-1">
+        <button
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg text-xs font-semibold transition"
+          onClick={(e) => { e.stopPropagation(); onSelect(clip); }}
+        >
+          <Scissors className="w-3.5 h-3.5" />
+          Selecionar
+        </button>
+        <CopyButton videoId={videoId} startTime={clip.startTime} />
+        <a
+          href={`https://youtu.be/${videoId}?t=${Math.floor(clip.startTime)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition"
+          title="Abrir no YouTube"
+        >
+          <Share2 className="w-4 h-4 text-gray-400" />
+        </a>
+      </div>
+
+      {/* Download com FFmpeg */}
+      <VideoDownloader clip={clip} videoId={videoId} />
     </div>
   );
 }
