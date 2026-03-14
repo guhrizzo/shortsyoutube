@@ -16,19 +16,24 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [debugInfo, setDebugInfo] = useState(""); // ← debug
 
   useEffect(() => {
-    if (!loading && user) router.push("/");
+    if (!loading && user) router.push("/dashboard");
   }, [user, loading, router]);
 
   async function handleGoogle() {
     try {
       setIsLoading(true);
       setError("");
+      setDebugInfo("Iniciando Google Sign-in...");
       await signInWithGoogle();
-      router.push("/");
-    } catch {
-      setError("Erro ao entrar com Google. Tente novamente.");
+      setDebugInfo("Google Sign-in OK! Redirecionando...");
+      router.push("/dashboard");
+    } catch (err: any) {
+      console.error("Google error:", err);
+      setDebugInfo(`Google error: code=${err.code} | msg=${err.message}`);
+      setError("Erro ao entrar com Google. Veja o debug abaixo.");
     } finally {
       setIsLoading(false);
     }
@@ -42,16 +47,25 @@ export default function LoginPage() {
     try {
       setIsLoading(true);
       setError("");
+      setDebugInfo("Tentando login com email...");
       await signInWithEmail(email, password);
-      router.push("/");
+      setDebugInfo("Login OK! Redirecionando...");
+      router.push("/dashboard");
     } catch (err: any) {
+      console.error("Login error:", err);
+      // Mostra TUDO para debug
+      setDebugInfo(`code: ${err.code} | message: ${err.message}`);
       const messages: Record<string, string> = {
-        "auth/user-not-found": "Usuário não encontrado.",
+        "auth/user-not-found": "Usuário não encontrado. Crie uma conta primeiro.",
         "auth/wrong-password": "Senha incorreta.",
         "auth/invalid-credential": "Email ou senha incorretos.",
         "auth/invalid-email": "Email inválido.",
+        "auth/user-disabled": "Conta desativada.",
+        "auth/too-many-requests": "Muitas tentativas. Tente mais tarde.",
+        "auth/network-request-failed": "Erro de rede. Verifique sua conexão.",
+        "auth/operation-not-allowed": "Login com email não está ativado no Firebase.",
       };
-      setError(messages[err.code] || "Erro ao entrar. Tente novamente.");
+      setError(messages[err.code] || `Erro desconhecido: ${err.code}`);
     } finally {
       setIsLoading(false);
     }
@@ -64,7 +78,6 @@ export default function LoginPage() {
 
       {/* ── LEFT: Branding panel ───────────────────────────────── */}
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden">
-
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,#7c3aed30,transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,#4f46e520,transparent_60%)]" />
         <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-600/20 rounded-full blur-[100px] animate-pulse" />
@@ -205,7 +218,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="seu@email.com"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                onChange={(e) => { setEmail(e.target.value); setError(""); setDebugInfo(""); }}
                 className="w-full bg-white/5 border border-white/10 focus:border-purple-500/60 rounded-xl py-3.5 pl-11 pr-4 text-white placeholder-gray-600 text-sm focus:outline-none focus:bg-white/[0.07] transition-all"
               />
             </div>
@@ -216,7 +229,7 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Senha"
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                onChange={(e) => { setPassword(e.target.value); setError(""); setDebugInfo(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
                 className="w-full bg-white/5 border border-white/10 focus:border-purple-500/60 rounded-xl py-3.5 pl-11 pr-11 text-white placeholder-gray-600 text-sm focus:outline-none focus:bg-white/[0.07] transition-all"
               />
@@ -235,6 +248,13 @@ export default function LoginPage() {
             <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-start gap-2">
               <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
               {error}
+            </div>
+          )}
+
+          {/* Debug info — remova após resolver */}
+          {debugInfo && (
+            <div className="mb-4 px-4 py-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-yellow-300 text-xs font-mono break-all">
+              🔍 {debugInfo}
             </div>
           )}
 

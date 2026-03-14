@@ -1,6 +1,13 @@
 // lib/firebase.ts — Firebase client (browser)
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -12,14 +19,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Evita inicializar múltiplas vezes (hot reload do Next.js)
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
-
-// ─── Helpers de Auth ─────────────────────────────────────────────
 
 export async function signInWithGoogle() {
   const result = await signInWithPopup(auth, googleProvider);

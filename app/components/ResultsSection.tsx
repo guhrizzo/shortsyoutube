@@ -9,6 +9,7 @@ import { VideoAnalysis, Clip } from "@/app/types";
 import { VideoPreview } from "@/app/components/VideoPreview";
 import { ClipCard } from "@/app/components/ClipCard";
 import { ViralScore } from "@/app/components/ViralScore";
+import { ClipCaptionWrapper } from "./ClipCaptionWrapper";
 
 interface ResultsSectionProps {
   analysis: VideoAnalysis;
@@ -59,11 +60,10 @@ export function ResultsSection({ analysis, videoId }: ResultsSectionProps) {
                 <button
                   key={ratio}
                   onClick={() => setAspectRatio(ratio)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
-                    aspectRatio === ratio
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${aspectRatio === ratio
                       ? "bg-purple-500/20 text-purple-400 border-purple-500/40"
                       : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10"
-                  }`}
+                    }`}
                 >
                   {ratio}
                 </button>
@@ -82,7 +82,7 @@ export function ResultsSection({ analysis, videoId }: ResultsSectionProps) {
               duration={analysis.duration}
               isPlaying={isPlaying}
               onPlayPause={() => setIsPlaying(!isPlaying)}
-              onSeek={() => {}}
+              onSeek={() => { }}
               aspectRatio={aspectRatio}
             />
 
@@ -116,13 +116,19 @@ export function ResultsSection({ analysis, videoId }: ResultsSectionProps) {
 
             <div className="space-y-4 max-h-175 overflow-y-auto pr-1 custom-scrollbar">
               {analysis.clips.map((clip) => (
-                <ClipCard
+                <ClipCaptionWrapper
                   key={clip.id}
                   clip={clip}
                   videoId={videoId}
-                  isActive={selectedClip.id === clip.id}
-                  onSelect={handleSelectClip}
-                />
+                  segments={analysis.transcription}
+                >
+                  <ClipCard
+                    clip={clip}
+                    videoId={videoId}
+                    isActive={selectedClip.id === clip.id}
+                    onSelect={handleSelectClip}
+                  />
+                </ClipCaptionWrapper>
               ))}
             </div>
           </div>

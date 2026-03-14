@@ -451,7 +451,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#030305" />
 
         {/* Segurança */}
-        <meta httpEquiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://analytics.clipai.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' https: blob:; connect-src 'self' https://api.clipai.com https://analytics.clipai.com; frame-src 'self' https://www.youtube.com https://youtube.com;" />
+        <meta httpEquiv="Content-Security-Policy" content="default-src 'self' 'unsafe-eval' 'unsafe-inline' https: data: blob:;" />
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta httpEquiv="X-Frame-Options" content="SAMEORIGIN" />
         <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
