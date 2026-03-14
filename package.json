@@ -9,8 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
     "@google/generative-ai": "^0.24.1",
     "clsx": "^2.1.1",
+    "form-data": "^4.0.5",
+    "formdata": "^0.10.4",
+    "FormData": "^0.10.1",
     "googleapis": "^171.4.0",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",

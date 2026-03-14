@@ -38,6 +38,7 @@ import {
 
 import { VideoAnalysis } from "@/app/types";
 import { VideoPreview } from "@/app/components/VideoPreview";
+import { ResultsSection } from "./components/ResultsSection";
 
 function extractYouTubeId(url: string) {
   const regExp =
@@ -150,7 +151,7 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen bg-[#030305] text-white overflow-x-hidden selection:bg-purple-500/30 selection:text-purple-200">
-      
+
       {/* Background Effects */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[128px] animate-pulse" />
@@ -159,11 +160,10 @@ export default function HomePage() {
       </div>
 
       {/* NAVBAR */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all border-b border-white/15 duration-500 ${
-        isScrolled 
-          ? "bg-[#030305]/90   backdrop-blur-xl  shadow-2xl shadow-purple-900/10" 
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all border-b border-white/15 duration-500 ${isScrolled
+          ? "bg-[#030305]/90   backdrop-blur-xl  shadow-2xl shadow-purple-900/10"
           : "bg-transparent"
-      }`}>
+        }`}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3 group cursor-pointer">
             <div className="relative w-10 h-10 bg-linear-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/25 group-hover:shadow-purple-600/40 transition-all duration-300 group-hover:scale-105">
@@ -201,7 +201,7 @@ export default function HomePage() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="md:hidden p-2 text-white"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
@@ -224,9 +224,9 @@ export default function HomePage() {
       {/* HERO */}
       <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent" />
-        
+
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-          
+
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full mb-8 hover:bg-purple-500/20 transition-all duration-300 cursor-pointer group">
             <Sparkles className="w-4 h-4 text-purple-400 group-hover:rotate-12 transition-transform duration-300" />
             <span className="text-sm font-medium text-purple-300">
@@ -243,21 +243,21 @@ export default function HomePage() {
           </h1>
 
           <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-            Nossa IA analisa vídeos do YouTube e encontra automaticamente 
+            Nossa IA analisa vídeos do YouTube e encontra automaticamente
             os melhores momentos para Shorts, Reels e TikTok em segundos.
           </p>
 
           {/* INPUT */}
           <div className="max-w-3xl mx-auto relative">
-            
+
             <div className="relative flex flex-col md:flex-row gap-3 bg-[#0a0a0f]/90 backdrop-blur border border-white/10 p-2 rounded-2xl shadow-2xl shadow-purple-900/20 hover:border-purple-500/30 transition-all duration-300">
-              
+
               <div className="flex items-center flex-1 px-4 py-2">
                 <div className="relative">
                   <Youtube className="w-6 h-6 text-red-500 mr-3 relative z-10" />
                   <div className="absolute inset-0 bg-red-500/20 blur-lg rounded-full" />
                 </div>
-                
+
                 <input
                   ref={inputRef}
                   value={url}
@@ -277,7 +277,7 @@ export default function HomePage() {
                 className="relative overflow-hidden bg-linear-to-r from-purple-600 to-purple-700 hover:from-purple-500 hover:to-purple-600 transition-all duration-300 px-8 py-4 rounded-xl font-semibold flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-purple-600/25 group cursor-pointer"
               >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                
+
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin w-5 h-5 mr-2" />
@@ -342,98 +342,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* RESULTADOS */}
       {analysis && (
-        <section
-          id="results"
-          className="relative py-20 bg-linear-to-b from-purple-900/10 via-[#030305] to-[#030305]"
-        >
-          <div className="max-w-7xl mx-auto px-6">
-            
-            <div className="mb-12 text-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full mb-4">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-xs font-medium text-green-400">Análise Completa</span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-linear-to-r from-white to-gray-400 bg-clip-text text-transparent">
-                Momentos Identificados
-              </h2>
-              <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Selecione os melhores cortes para criar conteúdo viral em minutos
-              </p>
-            </div>
-
-            <div className="grid lg:grid-cols-3 gap-8">
-              {/* Video Preview */}
-              <div className="lg:col-span-2">
-                <VideoPreview
-                  videoId={videoId}
-                  currentTime={currentTime}
-                  duration={analysis.duration}
-                  isPlaying={isPlaying}
-                  onPlayPause={() => setIsPlaying(!isPlaying)}
-                  onSeek={setCurrentTime}
-                  aspectRatio={aspectRatio}
-                />
-              </div>
-
-              {/* Sidebar com cortes */}
-              <div className="space-y-4">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-                  <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-purple-400" />
-                    Melhores Momentos
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((_, i) => (
-                      <div key={i} className="group flex items-center gap-4 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-purple-500/30 transition-all duration-300 cursor-pointer">
-                        <div className="relative w-20 h-12 bg-gray-800 rounded-lg overflow-hidden">
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Play className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
-                          <div className="absolute bottom-1 right-1 text-[10px] bg-black/80 px-1 rounded text-white">
-                            0:45
-                          </div>
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-white">Hook #{i + 1}</div>
-                          <div className="text-xs text-gray-500">Score: 94%</div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full bg-purple-600/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Scissors className="w-4 h-4 text-purple-400" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button className="w-full mt-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-lg shadow-purple-600/25">
-                    <Download className="w-4 h-4" />
-                    Exportar Todos
-                  </button>
-                </div>
-
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all duration-300 group cursor-pointer">
-                    <Copy className="w-5 h-5 text-gray-400 group-hover:text-white mx-auto mb-2 transition-colors" />
-                    <span className="text-xs text-gray-400 group-hover:text-white">Copiar Link</span>
-                  </button>
-                  <button className="p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all duration-300 group cursor-pointer">
-                    <Share2 className="w-5 h-5 text-gray-400 group-hover:text-white mx-auto mb-2 transition-colors" />
-                    <span className="text-xs text-gray-400 group-hover:text-white">Compartilhar</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <ResultsSection analysis={analysis} videoId={videoId} />
       )}
 
       {/* FEATURES */}
       <section id="features" className="relative py-32 overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-b from-transparent via-purple-900/5 to-transparent" />
-        
+
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-20">
             <span className="text-purple-400 text-sm font-semibold tracking-wider uppercase mb-4 block">
@@ -562,7 +478,7 @@ export default function HomePage() {
       <section className="py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-r from-purple-900/20 to-pink-900/20" />
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
-        
+
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-4xl md:text-6xl font-bold mb-6">
             Pronto para viralizar?
@@ -570,9 +486,9 @@ export default function HomePage() {
           <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
             Junte-se a milhares de criadores que estão economizando horas de edição e aumentando seu alcance.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
+            <button
               onClick={() => inputRef.current?.focus()}
               className="px-8 py-4 bg-white text-black rounded-full font-bold text-lg hover:bg-gray-200 transition-all duration-300 hover:scale-105 shadow-2xl shadow-white/10 flex items-center justify-center gap-2 cursor-pointer"
             >
@@ -619,7 +535,7 @@ export default function HomePage() {
                 ))}
               </div>
             </div>
-            
+
             <div>
               <h4 className="font-bold mb-4 text-white">Produto</h4>
               <ul className="space-y-3 text-gray-400">
@@ -627,17 +543,17 @@ export default function HomePage() {
                 <li><a href="#" className="hover:text-purple-400 transition-colors">Preços</a></li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-bold mb-4 text-white">Suporte</h4>
               <ul className="space-y-3 text-gray-400">
                 <li><a href="#" className="hover:text-purple-400 transition-colors">Contato</a></li>
-                
-                
+
+
               </ul>
             </div>
           </div>
-          
+
           <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
             <p>© {new Date().getFullYear()} ClipAI. Todos os direitos reservados.</p>
             <div className="flex gap-6">
@@ -667,26 +583,25 @@ function FeatureCard({
   const { ref, isVisible } = useScrollAnimation();
 
   return (
-    <div 
+    <div
       ref={ref}
-      className={`group relative p-8 rounded-3xl bg-white/2 border border-white/10 hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-      }`}
+      className={`group relative p-8 rounded-3xl bg-white/2 border border-white/10 hover:border-purple-500/30 transition-all duration-500 hover:-translate-y-2 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+        }`}
     >
       <div className={`absolute inset-0 bg-linear-to-br ${gradient} opacity-0 group-hover:opacity-5 rounded-3xl transition-opacity duration-500`} />
-      
+
       <div className={`w-14 h-14 rounded-2xl bg-linear-to-br ${gradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
         <Icon className="w-7 h-7 text-white" />
       </div>
-      
+
       <h3 className="text-xl font-bold mb-3 text-white group-hover:text-purple-300 transition-colors">
         {title}
       </h3>
-      
+
       <p className="text-gray-400 leading-relaxed">
         {description}
       </p>
-      
+
       <div className="mt-6 flex items-center text-purple-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         Saiba mais
         <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />

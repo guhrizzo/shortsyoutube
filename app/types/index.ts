@@ -1,25 +1,35 @@
+// app/types/index.ts
+
+export interface TranscriptionSegment {
+  id: number;
+  start: number;
+  end: number;
+  text: string;
+}
+
+export interface ClipMetrics {
+  retention: number;
+  engagement: number;
+  trendAlignment: number;
+  shareability: number;
+}
+
+export interface Clip {
+  id: string;
+  title: string;
+  startTime: number;
+  endTime: number;
+  duration: number;
+  hook: string;
+  why: string;
+  viralScore: number;
+  platform: ("shorts" | "reels" | "tiktok")[];
+  metrics: ClipMetrics;
+}
+
 export interface VideoAnalysis {
-  id: string
-  title: string
-  duration: number
-  thumbnail: string
-  hooks: Hook[]
-  segments: Segment[]
-}
-
-export interface Hook {
-  id: string
-  startTime: number
-  endTime: number
-  text: string
-  confidence: number
-  viralScore: number
-}
-
-export interface Segment {
-  id: string
-  startTime: number
-  endTime: number
-  transcript: string
-  engagementScore: number
+  videoId: string;
+  duration: number;
+  clips: Clip[];
+  transcription: TranscriptionSegment[];
 }
