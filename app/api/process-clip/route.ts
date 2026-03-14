@@ -44,11 +44,9 @@ export async function POST(req: NextRequest) {
     tmpFiles.push(inputPath, outputPath);
 
     const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    const cookiesPath = path.join(process.cwd(), "cookies.txt");
 
-    // ── 1. Download com yt-dlp ────────────────────────────────
-    console.log(`[process-clip] Iniciando download de ${videoUrl}...`);
-    console.log(`[process-clip] cookies.txt existe: ${fs.existsSync(cookiesPath)}`);
+    // ── Cookies via env var ───────────────────────────────────
+    const cookiesContent = process.env.YOUTUBE_COOKIES;
 
     const ytdlpArgs = [
       videoUrl,
@@ -60,9 +58,18 @@ export async function POST(req: NextRequest) {
       "--force-keyframes-at-cuts",
     ];
 
-    if (fs.existsSync(cookiesPath)) {
-      ytdlpArgs.push("--cookies", cookiesPath);
+    if (cookiesContent) {
+      const tmpCookiesPath = path.join(tmpDir, `${id}-cookies.txt`);
+      fs.writeFileSync(tmpCookiesPath, cookiesContent);
+      tmpFiles.push(tmpCookiesPath);
+      ytdlpArgs.push("--cookies", tmpCookiesPath);
+      console.log(`[process-clip] Cookies carregados via env var`);
+    } else {
+      console.log(`[process-clip] Nenhum cookie encontrado, prosseguindo sem autenticação`);
     }
+
+    // ── 1. Download com yt-dlp ────────────────────────────────
+    console.log(`[process-clip] Iniciando download de ${videoUrl}...`);
 
     try {
       const { stdout, stderr } = await execFileAsync("yt-dlp", ytdlpArgs, { timeout: 90_000 });
@@ -85,7 +92,6 @@ export async function POST(req: NextRequest) {
         tmpFiles.push(found);
         console.log(`[process-clip] Arquivo encontrado em: ${actualInput}`);
       } else {
-        // Lista o tmpdir para debug
         const files = fs.readdirSync(tmpDir).filter(f => f.includes(id));
         console.error(`[process-clip] Arquivos com ID ${id}: ${files.join(", ")}`);
         throw new Error("Arquivo de vídeo não encontrado após download.");
@@ -105,8 +111,6 @@ export async function POST(req: NextRequest) {
     };
 
     const vf = vfFilters[aspectRatio] ?? vfFilters["9:16"];
-
-    // O yt-dlp baixou a partir de (startTime - 2), então o offset relativo é 2s
     const relativeOffset = Math.min(2, startTime);
 
     try {

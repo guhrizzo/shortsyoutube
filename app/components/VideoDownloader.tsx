@@ -160,7 +160,7 @@ export function VideoDownloader({ clip, videoId }: VideoDownloaderProps) {
           </div>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full transition-all duration-500"
+              className="h-full bg-linear-to-r from-purple-600 to-pink-600 rounded-full transition-all duration-500"
               style={{ width: `${Math.max(progress, 5)}%` }}
             />
           </div>
@@ -173,7 +173,7 @@ export function VideoDownloader({ clip, videoId }: VideoDownloaderProps) {
       {/* Erro */}
       {stage === "error" && (
         <div className="flex items-start gap-2 px-3 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs">
-          <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="break-all">{error}</p>
             <button
@@ -218,7 +218,7 @@ export function VideoDownloader({ clip, videoId }: VideoDownloaderProps) {
         <>
           <button
             onClick={(e) => { e.stopPropagation(); handleProcess(); }}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-600/20"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-purple-600/20"
           >
             <Film className="w-4 h-4" />
             Baixar Corte ({selectedRatio})

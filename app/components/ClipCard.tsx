@@ -40,7 +40,7 @@ function ScoreRing({ score }: { score: number }) {
   const color = score >= 80 ? "#22c55e" : score >= 60 ? "#eab308" : "#ef4444";
 
   return (
-    <div className="relative w-12 h-12 flex-shrink-0">
+    <div className="relative w-12 h-12 shrink-0">
       <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
         <circle cx="18" cy="18" r="16" fill="none" stroke="#ffffff10" strokeWidth="3" />
         <circle
@@ -96,7 +96,7 @@ export function ClipCard({ clip, videoId, isActive, onSelect }: ClipCardProps) {
       {/* Header */}
       <div className="flex items-start gap-3 p-4">
         {/* Thumbnail */}
-        <div className="relative w-24 h-14 rounded-lg overflow-hidden flex-shrink-0 bg-gray-800">
+        <div className="relative w-24 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-800">
           <img
             src={thumbnailUrl}
             alt={clip.title}
