@@ -12,6 +12,8 @@
     "@anthropic-ai/sdk": "^0.78.0",
     "@google/generative-ai": "^0.24.1",
     "clsx": "^2.1.1",
+    "firebase": "^12.10.0",
+    "firebase-admin": "^13.7.0",
     "form-data": "^4.0.5",
     "formdata": "^0.10.4",
     "FormData": "^0.10.1",

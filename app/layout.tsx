@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from "@/app/context/AuthContext";
 
 // Fonte principal - Inter para UI clean e moderna
 const inter = Inter({
@@ -41,7 +42,7 @@ export const metadata: Metadata = {
   },
   description:
     "ClipAI usa inteligência artificial para analisar vídeos do YouTube e criar automaticamente Shorts, Reels e TikToks virais. Economize horas de edição e maximize seu alcance.",
-  
+
   // Keywords (ainda relevantes para alguns crawlers)
   keywords: [
     "clipai",
@@ -66,7 +67,7 @@ export const metadata: Metadata = {
   generator: "Next.js",
   applicationName: "ClipAI",
   referrer: "origin-when-cross-origin",
-  
+
   // Robots e indexação
   robots: {
     index: true,
@@ -410,7 +411,9 @@ const structuredData = {
 };
 
 export default function RootLayout({
+
   children,
+
 }: {
   children: React.ReactNode;
 }) {
@@ -504,9 +507,11 @@ export default function RootLayout({
         </a>
 
         {/* Container principal */}
-        <div id="main-content" className="relative">
-          {children}
-        </div>
+        <AuthProvider>
+          <div id="main-content" className="relative">
+            {children}
+          </div>
+        </AuthProvider>
 
         {/* Service Worker registration (PWA) */}
         <script

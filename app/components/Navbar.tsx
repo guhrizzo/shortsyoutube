@@ -1,69 +1,107 @@
 "use client";
 
+// app/components/Navbar.tsx
+import { useState, useEffect } from "react";
 import { Scissors, Menu, X } from "lucide-react";
-import { useState } from "react";
-import { Button } from "./ui/button";
-import { cn } from "@/app/lib/utils";
+import { UserMenu } from "./UserMenu";
 
-export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+interface NavbarProps {
+  onScrollToSection?: (id: string) => void;
+}
+
+export function Navbar({ onScrollToSection }: NavbarProps) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  function scrollToSection(id: string) {
+    onScrollToSection?.(id);
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMobileMenuOpen(false);
+  }
+
+  const navLinks = [
+    { label: "Recursos", id: "features" },
+    { label: "Como Funciona", id: "how-it-works" },
+    { label: "Preços", id: "pricing" },
+  ];
 
   return (
-    <nav className="fixed top-0 w-full z-50 glass-panel border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-linear-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-              <Scissors className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">
-              Viral<span className="gradient-text">Cut</span>
-            </span>
-          </div>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${
+        isScrolled
+          ? "bg-[#030305]/90 backdrop-blur-xl shadow-2xl shadow-purple-900/10 border-white/10"
+          : "bg-transparent border-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6">
-            <button className="text-sm text-gray-400 hover:text-white transition">
-              Como Funciona
-            </button>
-            <button className="text-sm text-gray-400 hover:text-white transition">
-              Preços
-            </button>
-            <Button variant="outline" size="sm">
-              Login
-            </Button>
-            <Button variant="gradient" size="sm">
-              Começar Grátis
-            </Button>
+        {/* Logo */}
+        <div className="flex items-center gap-3 group cursor-pointer" onClick={() => scrollToSection("hero")}>
+          <div className="relative w-10 h-10 bg-linear-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/25 group-hover:shadow-purple-600/50 transition-all duration-300 group-hover:scale-105">
+            <Scissors className="w-5 h-5 text-white group-hover:rotate-12 transition-transform duration-300" />
+            <div className="absolute inset-0 bg-linear-to-br from-purple-400 to-purple-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
           </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <span className="font-bold text-xl tracking-tight bg-linear-to-r from-white to-gray-400 bg-clip-text text-transparent">
+            ClipAI
+          </span>
         </div>
 
-        {/* Mobile Menu */}
-        {isOpen && (
-          <div className="md:hidden py-4 space-y-4 border-t border-white/10">
-            <button className="block w-full text-left text-sm text-gray-400 hover:text-white py-2">
-              Como Funciona
+        {/* Desktop links */}
+        <div className="hidden md:flex items-center gap-8">
+          {navLinks.map(({ label, id }) => (
+            <button
+              key={id}
+              onClick={() => scrollToSection(id)}
+              className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer relative group"
+            >
+              {label}
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full transition-all duration-300 rounded-full" />
             </button>
-            <button className="block w-full text-left text-sm text-gray-400 hover:text-white py-2">
-              Preços
-            </button>
-            <Button variant="outline" className="w-full">
-              Login
-            </Button>
-            <Button variant="gradient" className="w-full">
-              Começar Grátis
-            </Button>
-          </div>
-        )}
+          ))}
+        </div>
+
+        {/* Desktop auth */}
+        <div className="hidden md:flex items-center gap-4">
+          <UserMenu />
+        </div>
+
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden p-2 text-white rounded-lg hover:bg-white/5 transition"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Menu"
+        >
+          {mobileMenuOpen
+            ? <X className="w-6 h-6" />
+            : <Menu className="w-6 h-6" />
+          }
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-[#030305]/97 backdrop-blur-xl border-b border-white/10 p-6 flex flex-col gap-2 animate-in slide-in-from-top-3 duration-200">
+          {navLinks.map(({ label, id }) => (
+            <button
+              key={id}
+              onClick={() => scrollToSection(id)}
+              className="text-left text-gray-300 hover:text-white hover:bg-white/5 px-3 py-2.5 rounded-lg transition-all"
+            >
+              {label}
+            </button>
+          ))}
+          <hr className="border-white/10 my-2" />
+          <div className="flex flex-col gap-3">
+            <UserMenu />
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

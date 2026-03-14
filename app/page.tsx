@@ -39,6 +39,7 @@ import {
 import { VideoAnalysis } from "@/app/types";
 import { VideoPreview } from "@/app/components/VideoPreview";
 import { ResultsSection } from "./components/ResultsSection";
+import { Navbar } from "./components/Navbar";
 
 function extractYouTubeId(url: string) {
   const regExp =
@@ -159,67 +160,7 @@ export default function HomePage() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-purple-900/5 rounded-full blur-[100px]" />
       </div>
 
-      {/* NAVBAR */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all border-b border-white/15 duration-500 ${isScrolled
-          ? "bg-[#030305]/90   backdrop-blur-xl  shadow-2xl shadow-purple-900/10"
-          : "bg-transparent"
-        }`}>
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="relative w-10 h-10 bg-linear-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/25 group-hover:shadow-purple-600/40 transition-all duration-300 group-hover:scale-105">
-              <Scissors className="w-5 h-5 text-white transform group-hover:rotate-12 transition-transform duration-300" />
-              <div className="absolute inset-0 bg-linear-to-br from-purple-400 to-purple-600 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10" />
-            </div>
-            <span className="font-bold text-xl tracking-tight bg-linear-to-r from-white to-gray-400 bg-clip-text text-transparent">
-              ClipAI
-            </span>
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            <button onClick={() => scrollToSection("features")} className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer relative group">
-              Recursos
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full transition-all duration-300" />
-            </button>
-            <button onClick={() => scrollToSection("how-it-works")} className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer relative group">
-              Como Funciona
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full  transition-all duration-300" />
-            </button>
-            <button onClick={() => scrollToSection("pricing")} className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer relative group">
-              Preços
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full transition-all duration-300" />
-            </button>
-          </div>
-
-          <div className="hidden md:flex items-center gap-4">
-            <button className="px-4 py-2 text-sm text-gray-300 hover:text-white transition-colors cursor-pointer">
-              Entrar
-            </button>
-            <button className="px-5 py-2.5 bg-white text-black rounded-full text-sm font-semibold hover:bg-gray-200 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-white/10 cursor-pointer">
-              Começar Grátis
-            </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2 text-white"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-[#030305]/95 backdrop-blur-xl border-b border-white/10 p-6 flex flex-col gap-4 animate-in slide-in-from-top-5">
-            <button onClick={() => scrollToSection("features")} className="text-left text-gray-300 hover:text-white py-2">Recursos</button>
-            <button onClick={() => scrollToSection("how-it-works")} className="text-left text-gray-300 hover:text-white py-2">Como Funciona</button>
-            <button onClick={() => scrollToSection("pricing")} className="text-left text-gray-300 hover:text-white py-2">Preços</button>
-            <hr className="border-white/10" />
-            <button className="w-full py-3 bg-white text-black rounded-xl font-semibold">Começar Grátis</button>
-          </div>
-        )}
-      </nav>
+      <Navbar onScrollToSection={scrollToSection} />
 
       {/* HERO */}
       <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
