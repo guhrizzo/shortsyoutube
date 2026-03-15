@@ -82,7 +82,8 @@ def process_clip(req: ClipRequest):
         # ── 1. Download com yt-dlp ────────────────────────────
         logger.info(f"[{job_id}] Baixando {req.video_id}...")
         ydl_opts = {
-            "format": "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+            "format": "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+            "merge_output_format": "mp4",
             "outtmpl": str(raw_path),
             "quiet": True,
             "no_warnings": True,
