@@ -1,7 +1,6 @@
 # worker/Dockerfile
 FROM python:3.11-slim
 
-# Instala ffmpeg e dependências do sistema
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     git \
@@ -10,11 +9,13 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY requirements.txt .
+
+# Instala setuptools/wheel ANTES do resto para resolver pkg_resources no whisper
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY main.py .
 
-# Pré-baixa o modelo Whisper na build (evita download no primeiro request)
 ARG WHISPER_MODEL=base
 RUN python -c "import whisper; whisper.load_model('${WHISPER_MODEL}')"
 
