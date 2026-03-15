@@ -81,12 +81,26 @@ def process_clip(req: ClipRequest):
     try:
         # ── 1. Download com yt-dlp ────────────────────────────
         logger.info(f"[{job_id}] Baixando {req.video_id}...")
+        # Salva cookies em arquivo temporário se a variável existir
+        cookies_file = None
+        yt_cookies = os.getenv("YT_COOKIES")
+        if yt_cookies:
+            cookies_file = str(tmp_dir / "cookies.txt")
+            with open(cookies_file, "w") as cf:
+                cf.write(yt_cookies)
+
         ydl_opts = {
-            "format": "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+            "format": (
+                "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]"
+                "/bestvideo[height<=720]+bestaudio"
+                "/best[height<=720]"
+                "/best"
+            ),
             "merge_output_format": "mp4",
             "outtmpl": str(raw_path),
             "quiet": True,
             "no_warnings": True,
+            **({"cookiefile": cookies_file} if cookies_file else {}),
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([f"https://www.youtube.com/watch?v={req.video_id}"])
