@@ -1,0 +1,6 @@
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+ffmpeg-python==0.2.0
+openai-whisper==20231117
+yt-dlp==2024.5.27
+pydantic==2.7.1

@@ -1,0 +1,26 @@
+# worker/Dockerfile
+FROM python:3.11-slim
+
+# Instala ffmpeg e dependências do sistema
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY main.py .
+
+# Pré-baixa o modelo Whisper na build (evita download no primeiro request)
+ARG WHISPER_MODEL=base
+RUN python -c "import whisper; whisper.load_model('${WHISPER_MODEL}')"
+
+ENV WHISPER_MODEL=${WHISPER_MODEL}
+ENV PORT=8000
+
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
