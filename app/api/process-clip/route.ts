@@ -63,19 +63,6 @@ export async function POST(req: NextRequest) {
       console.log(`[process-clip] Nenhum cookie encontrado, prosseguindo sem autenticação`);
     }
 
-    // ── Debug: versão e formatos disponíveis ─────────────────
-    try {
-      const { stdout: version } = await execFileAsync("yt-dlp", ["--version"]);
-      console.log(`[process-clip] yt-dlp version: ${version.trim()}`);
-
-      const formatArgs = [videoUrl, "--list-formats"];
-      if (tmpCookiesPath) formatArgs.push("--cookies", tmpCookiesPath);
-      const { stdout: formats } = await execFileAsync("yt-dlp", formatArgs, { timeout: 30_000 });
-      console.log(`[process-clip] formatos disponíveis:\n${formats}`);
-    } catch (e: any) {
-      console.log(`[process-clip] debug error: ${e.message}`);
-    }
-
     // ── 1. Download com yt-dlp ────────────────────────────────
     const ytdlpArgs = [
       videoUrl,
@@ -84,6 +71,7 @@ export async function POST(req: NextRequest) {
       "--no-playlist",
       "--no-warnings",
       "--merge-output-format", "mp4",
+      "--extractor-args", "youtube:player_client=android",
     ];
 
     if (tmpCookiesPath) {
