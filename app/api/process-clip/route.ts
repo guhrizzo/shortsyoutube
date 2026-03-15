@@ -64,6 +64,8 @@ export async function POST(req: NextRequest) {
     }
 
     // ── 1. Download com yt-dlp ────────────────────────────────
+    const poTokenServer = process.env.YOUTUBE_PO_TOKEN_SERVER;
+
     const ytdlpArgs = [
       videoUrl,
       "--format", "bestvideo+bestaudio/best",
@@ -71,8 +73,14 @@ export async function POST(req: NextRequest) {
       "--no-playlist",
       "--no-warnings",
       "--merge-output-format", "mp4",
-      "--extractor-args", "youtube:player_client=android",
     ];
+
+    if (poTokenServer) {
+      ytdlpArgs.push(
+        "--extractor-args", `youtube:player_client=web;po_token=web+${poTokenServer}`,
+      );
+      console.log(`[process-clip] PO Token server: ${poTokenServer}`);
+    }
 
     if (tmpCookiesPath) {
       ytdlpArgs.push("--cookies", tmpCookiesPath);
