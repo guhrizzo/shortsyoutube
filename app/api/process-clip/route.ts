@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     const ytdlpArgs = [
       videoUrl,
-      "--format", "bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4][height<=720]/best[ext=mp4]/best",
+      "--format", "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
       "--output", inputPath,
       "--no-playlist",
       "--no-warnings",
@@ -64,7 +64,6 @@ export async function POST(req: NextRequest) {
       const decoded = isBase64
         ? Buffer.from(cookiesContent.trim(), "base64").toString("utf-8")
         : cookiesContent;
-      // Normaliza line endings (Windows \r\n → Unix \n)
       const normalized = decoded.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
       fs.writeFileSync(tmpCookiesPath, normalized);
       tmpFiles.push(tmpCookiesPath);
