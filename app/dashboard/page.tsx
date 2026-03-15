@@ -5,8 +5,9 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Scissors, Youtube, Wand2, Loader2, Sparkles,
-  Clock, Coins, TrendingUp, Play, ChevronRight,
-  LayoutDashboard, History, LogOut, Menu, X
+  Clock, TrendingUp, Play, ChevronRight,
+  LayoutDashboard, History, LogOut, Menu,
+  Upload, FileVideo, X, CheckCircle2
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { logOut } from "@/app/lib/firebase";
@@ -17,6 +18,7 @@ import {
 } from "firebase/firestore";
 import { VideoAnalysis, Clip } from "@/app/types";
 import { ResultsSection } from "@/app/components/ResultsSection";
+import Link from "next/link";
 
 function extractYouTubeId(url: string) {
   const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*).*/);
@@ -35,6 +37,11 @@ function formatDuration(seconds: number) {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
+function formatFileSize(bytes: number) {
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+
 interface HistoryItem {
   id: string;
   videoId: string;
@@ -50,21 +57,21 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, profile, loading, refreshProfile } = useAuth();
 
-  const [url, setUrl] = useState("");
+  // Upload state
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<VideoAnalysis | null>(null);
   const [error, setError] = useState("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"analyze" | "history">("analyze");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Redireciona se não logado
   useEffect(() => {
     if (!loading && !user) router.push("/login");
   }, [user, loading, router]);
 
-  // Carrega histórico em tempo real
   useEffect(() => {
     if (!user) return;
     const q = query(
@@ -79,20 +86,43 @@ export default function DashboardPage() {
     return () => unsub();
   }, [user]);
 
+  function handleFileDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith("video/")) {
+      setUploadedFile(file);
+      setError("");
+    } else {
+      setError("Envie um arquivo de vídeo (MP4, MOV, AVI...)");
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      setError("");
+    }
+  }
+
   async function handleAnalyze() {
-    if (!url.trim()) { setError("Cole uma URL do YouTube."); return; }
-    const videoId = extractYouTubeId(url);
-    if (!videoId) { setError("URL inválida. Use youtube.com ou youtu.be"); return; }
+    if (!uploadedFile) {
+      setError("Selecione um vídeo para analisar.");
+      return;
+    }
 
     try {
       setAnalyzing(true);
       setError("");
       setAnalysis(null);
 
+      const formData = new FormData();
+      formData.append("file", uploadedFile);
+
       const res = await fetch("/api/analyze-video", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: formData,
       });
 
       const data = await res.json();
@@ -100,11 +130,10 @@ export default function DashboardPage() {
 
       setAnalysis(data);
 
-      // Salva no histórico do Firestore
       await addDoc(collection(db, "analyses"), {
         uid: user!.uid,
         videoId: data.videoId,
-        url,
+        url: "",
         duration: data.duration,
         clipsCount: data.clips.length,
         clips: data.clips,
@@ -131,7 +160,6 @@ export default function DashboardPage() {
       clips: item.clips,
       transcription: [],
     });
-    setUrl(item.url);
     setActiveTab("analyze");
     setTimeout(() => {
       document.getElementById("results")?.scrollIntoView({ behavior: "smooth" });
@@ -140,19 +168,13 @@ export default function DashboardPage() {
 
   if (loading || !user) return null;
 
-  const videoId = extractYouTubeId(url) || "";
-
   return (
     <div className="min-h-screen bg-[#030305] text-white flex">
 
       {/* ── SIDEBAR ─────────────────────────────────────────────── */}
       <>
-        {/* Mobile overlay */}
         {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/60 z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
+          <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
         )}
 
         <aside className={`
@@ -161,7 +183,6 @@ export default function DashboardPage() {
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0 lg:static lg:z-auto
         `}>
-          {/* Logo */}
           <div className="p-6 border-b border-white/8">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-linear-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/25">
@@ -171,7 +192,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* User info */}
           <div className="p-4 border-b border-white/8">
             <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
               {user.photoURL ? (
@@ -182,31 +202,25 @@ export default function DashboardPage() {
                 </div>
               )}
               <div className="min-w-0">
-                <p className="text-sm font-medium text-white truncate">
-                  {user.displayName || "Usuário"}
-                </p>
+                <p className="text-sm font-medium text-white truncate">{user.displayName || "Usuário"}</p>
                 <p className="text-xs text-gray-500 truncate">{user.email}</p>
               </div>
             </div>
 
-            {/* Coins */}
             <div className="mt-3 flex items-center justify-between px-3 py-2.5 bg-yellow-500/8 border border-yellow-500/20 rounded-xl">
               <div className="flex items-center gap-2">
                 <span className="text-lg">🪙</span>
                 <div>
                   <p className="text-xs text-gray-400">Seus coins</p>
-                  <p className="text-lg font-bold text-yellow-400 leading-none">
-                    {profile?.coins ?? 0}
-                  </p>
+                  <p className="text-lg font-bold text-yellow-400 leading-none">{profile?.coins ?? 0}</p>
                 </div>
               </div>
-              <button className="text-xs text-purple-400 hover:text-purple-300 font-medium transition">
-                + Comprar
-              </button>
+              <Link href="/coins">
+                <button className="text-xs text-purple-400 hover:text-purple-300 font-medium transition cursor-pointer">+ Comprar</button>
+              </Link>
             </div>
           </div>
 
-          {/* Nav */}
           <nav className="flex-1 p-4 space-y-1">
             <button
               onClick={() => { setActiveTab("analyze"); setSidebarOpen(false); }}
@@ -230,14 +244,11 @@ export default function DashboardPage() {
               <History className="w-4 h-4" />
               Histórico
               {history.length > 0 && (
-                <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">
-                  {history.length}
-                </span>
+                <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">{history.length}</span>
               )}
             </button>
           </nav>
 
-          {/* Logout */}
           <div className="p-4 border-t border-white/8">
             <button
               onClick={async () => { await logOut(); router.push("/"); }}
@@ -253,7 +264,6 @@ export default function DashboardPage() {
       {/* ── MAIN ────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
 
-        {/* Top bar */}
         <header className="sticky top-0 z-30 bg-[#030305]/90 backdrop-blur border-b border-white/8 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -268,13 +278,12 @@ export default function DashboardPage() {
               </h1>
               <p className="text-xs text-gray-500">
                 {activeTab === "analyze"
-                  ? "Cole um link do YouTube para gerar cortes virais"
+                  ? "Envie um vídeo para gerar cortes virais com IA"
                   : `${history.length} vídeos analisados`}
               </p>
             </div>
           </div>
 
-          {/* Stats rápidas */}
           <div className="hidden md:flex items-center gap-6">
             <div className="text-center">
               <p className="text-xs text-gray-500">Vídeos</p>
@@ -282,9 +291,7 @@ export default function DashboardPage() {
             </div>
             <div className="text-center">
               <p className="text-xs text-gray-500">Cortes</p>
-              <p className="text-sm font-bold text-white">
-                {history.reduce((acc, h) => acc + h.clipsCount, 0)}
-              </p>
+              <p className="text-sm font-bold text-white">{history.reduce((acc, h) => acc + h.clipsCount, 0)}</p>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-full">
               <span className="text-sm">🪙</span>
@@ -293,44 +300,79 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* Content */}
         <main className="flex-1 p-6 max-w-6xl mx-auto w-full">
 
           {/* ── ABA: ANALISAR ── */}
           {activeTab === "analyze" && (
-            <div className="space-y-8">
+            <div className="space-y-6">
 
-              {/* Input card */}
+              {/* Upload de arquivo */}
               <div className="bg-white/3 border border-white/10 rounded-2xl p-6 space-y-4">
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-1">
                   <Sparkles className="w-4 h-4 text-purple-400" />
-                  <h2 className="font-semibold text-white">Novo Vídeo</h2>
+                  <h2 className="font-semibold text-white">Enviar Vídeo</h2>
                 </div>
+                <p className="text-xs text-gray-500 -mt-1">Envie o arquivo do seu vídeo e a IA encontra os melhores cortes</p>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex items-center flex-1 gap-3 bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 focus-within:border-purple-500/50 transition-colors">
-                    <Youtube className="w-5 h-5 text-red-500 shrink-0" />
+                {/* Drop zone */}
+                {!uploadedFile ? (
+                  <div
+                    onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleFileDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`relative flex flex-col items-center justify-center gap-4 p-10 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200 ${
+                      isDragging
+                        ? "border-purple-500 bg-purple-500/10"
+                        : "border-white/10 hover:border-purple-500/40 hover:bg-white/3"
+                    }`}
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center">
+                      <Upload className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-white">Arraste seu vídeo aqui</p>
+                      <p className="text-xs text-gray-500 mt-1">ou clique para selecionar · MP4, MOV, AVI · máx 500MB</p>
+                    </div>
                     <input
-                      ref={inputRef}
-                      value={url}
-                      onChange={(e) => { setUrl(e.target.value); setError(""); }}
-                      onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-                      placeholder="Cole o link do YouTube aqui..."
-                      className="bg-transparent outline-none w-full text-white placeholder-gray-600 text-sm"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="video/*"
+                      onChange={handleFileChange}
+                      className="hidden"
                     />
                   </div>
-                  <button
-                    onClick={handleAnalyze}
-                    disabled={analyzing}
-                    className="flex items-center justify-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-semibold text-sm transition-all disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap shadow-lg shadow-purple-600/20"
-                  >
-                    {analyzing ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Analisando...</>
-                    ) : (
-                      <><Wand2 className="w-4 h-4" /> Gerar Cortes</>
-                    )}
-                  </button>
-                </div>
+                ) : (
+                  /* Arquivo selecionado */
+                  <div className="flex items-center gap-4 p-4 bg-purple-600/10 border border-purple-500/20 rounded-xl">
+                    <div className="w-10 h-10 rounded-lg bg-purple-600/20 flex items-center justify-center shrink-0">
+                      <FileVideo className="w-5 h-5 text-purple-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white truncate">{uploadedFile.name}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{formatFileSize(uploadedFile.size)}</p>
+                    </div>
+                    <button
+                      onClick={() => { setUploadedFile(null); setAnalysis(null); setError(""); }}
+                      className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition shrink-0"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+
+                {/* Botão analisar */}
+                <button
+                  onClick={handleAnalyze}
+                  disabled={analyzing || !uploadedFile}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-purple-600 hover:bg-purple-500 rounded-xl font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-600/20"
+                >
+                  {analyzing ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Analisando com IA...</>
+                  ) : (
+                    <><Wand2 className="w-4 h-4" /> Gerar Cortes Virais</>
+                  )}
+                </button>
 
                 {error && (
                   <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2.5">
@@ -340,16 +382,31 @@ export default function DashboardPage() {
                 )}
 
                 {analyzing && (
-                  <div className="space-y-2">
-                    {["Buscando transcrição...", "Analisando com IA...", "Identificando cortes virais..."].map((step, i) => (
+                  <div className="space-y-2 pt-1">
+                    {["Processando vídeo...", "Analisando com IA...", "Identificando cortes virais..."].map((step, i) => (
                       <div key={i} className="flex items-center gap-3 text-sm text-gray-400">
-                        <div className="w-4 h-4 rounded-full border-2 border-purple-500/40 border-t-purple-500 animate-spin shrink-0"
-                          style={{ animationDelay: `${i * 0.2}s` }} />
+                        <div className="w-4 h-4 rounded-full border-2 border-purple-500/40 border-t-purple-500 animate-spin shrink-0" style={{ animationDelay: `${i * 0.2}s` }} />
                         {step}
                       </div>
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Link YouTube — em breve */}
+              <div className="relative flex items-center gap-4 p-5 bg-white/2 border border-white/8 rounded-2xl overflow-hidden">
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-yellow-500/3 to-transparent" />
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                  <Youtube className="w-5 h-5 text-red-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <p className="text-sm font-medium text-white">Cole um link do YouTube</p>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 rounded-full">Em breve</span>
+                  </div>
+                  <p className="text-xs text-gray-500">Estamos trabalhando para adicionar suporte a links do YouTube diretamente</p>
+                </div>
+                <CheckCircle2 className="w-4 h-4 text-gray-700 shrink-0" />
               </div>
 
               {/* Resultados */}
@@ -361,13 +418,13 @@ export default function DashboardPage() {
 
               {/* Empty state */}
               {!analysis && !analyzing && (
-                <div className="text-center py-16 space-y-4">
-                  <div className="w-16 h-16 rounded-2xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center mx-auto">
-                    <Scissors className="w-7 h-7 text-purple-400" />
+                <div className="text-center py-12 space-y-3">
+                  <div className="w-14 h-14 rounded-2xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center mx-auto">
+                    <Scissors className="w-6 h-6 text-purple-400" />
                   </div>
                   <div>
                     <p className="text-gray-300 font-medium">Pronto para criar cortes virais?</p>
-                    <p className="text-gray-600 text-sm mt-1">Cole um link do YouTube acima e a IA faz o resto</p>
+                    <p className="text-gray-600 text-sm mt-1">Envie um vídeo acima e a IA faz o resto</p>
                   </div>
                   {history.length > 0 && (
                     <button
@@ -403,7 +460,6 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <>
-                  {/* Summary cards */}
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
                     {[
                       { icon: TrendingUp, label: "Vídeos analisados", value: history.length, color: "text-purple-400" },
@@ -422,7 +478,6 @@ export default function DashboardPage() {
                     ))}
                   </div>
 
-                  {/* History list */}
                   <div className="space-y-3">
                     {history.map((item) => (
                       <div
@@ -430,13 +485,18 @@ export default function DashboardPage() {
                         onClick={() => loadFromHistory(item)}
                         className="group flex items-center gap-4 p-4 bg-white/3 border border-white/8 hover:border-purple-500/30 hover:bg-white/5 rounded-xl cursor-pointer transition-all duration-200"
                       >
-                        {/* Thumbnail */}
                         <div className="relative w-24 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-800">
-                          <img
-                            src={`https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
+                          {item.videoId ? (
+                            <img
+                              src={`https://img.youtube.com/vi/${item.videoId}/mqdefault.jpg`}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <FileVideo className="w-6 h-6 text-gray-600" />
+                            </div>
+                          )}
                           <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition">
                             <Play className="w-5 h-5 text-white fill-current" />
                           </div>
@@ -445,10 +505,9 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        {/* Info */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-white truncate">
-                            youtu.be/{item.videoId}
+                            {item.url ? `youtu.be/${item.videoId}` : "Vídeo enviado"}
                           </p>
                           <div className="flex items-center gap-3 mt-1">
                             <span className="text-xs text-gray-500 flex items-center gap-1">
