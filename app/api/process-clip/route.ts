@@ -50,12 +50,11 @@ export async function POST(req: NextRequest) {
 
     const ytdlpArgs = [
       videoUrl,
-      "--format", "best",
+      "--format", "bestvideo+bestaudio/best",
       "--output", inputPath,
       "--no-playlist",
       "--no-warnings",
-      "--download-sections", `*${Math.max(0, startTime - 2)}-${endTime + 2}`,
-      "--force-keyframes-at-cuts",
+      "--merge-output-format", "mp4",
     ];
 
     if (cookiesContent) {
@@ -116,12 +115,11 @@ export async function POST(req: NextRequest) {
     };
 
     const vf = vfFilters[aspectRatio] ?? vfFilters["9:16"];
-    const relativeOffset = Math.min(2, startTime);
 
     try {
       const { stdout, stderr } = await execFileAsync("ffmpeg", [
         "-i", actualInput,
-        "-ss", String(relativeOffset),
+        "-ss", String(startTime),
         "-t", String(duration),
         "-vf", vf,
         "-c:v", "libx264",
