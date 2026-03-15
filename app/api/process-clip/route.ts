@@ -68,9 +68,24 @@ export async function POST(req: NextRequest) {
       console.log(`[process-clip] Nenhum cookie encontrado, prosseguindo sem autenticação`);
     }
 
-    // ── 1. Download com yt-dlp ────────────────────────────────
+    // ── Testa conectividade com o servidor bgutil ─────────────
     const poTokenServer = process.env.YOUTUBE_PO_TOKEN_SERVER;
 
+    if (poTokenServer) {
+      try {
+        const testRes = await fetch(`${poTokenServer}/get_pot`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ videoId }),
+        });
+        const testData = await testRes.json();
+        console.log(`[process-clip] bgutil response: ${JSON.stringify(testData)}`);
+      } catch (e: any) {
+        console.log(`[process-clip] bgutil unreachable: ${e.message}`);
+      }
+    }
+
+    // ── 1. Download com yt-dlp ────────────────────────────────
     const ytdlpArgs = [
       videoUrl,
       "--format", "bestvideo+bestaudio/best",
