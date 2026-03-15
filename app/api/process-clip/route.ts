@@ -60,10 +60,16 @@ export async function POST(req: NextRequest) {
 
     if (cookiesContent) {
       const tmpCookiesPath = path.join(tmpDir, `${id}-cookies.txt`);
-      fs.writeFileSync(tmpCookiesPath, cookiesContent);
+      const isBase64 = /^[A-Za-z0-9+/=]+$/.test(cookiesContent.trim());
+      const decoded = isBase64
+        ? Buffer.from(cookiesContent.trim(), "base64").toString("utf-8")
+        : cookiesContent;
+      // Normaliza line endings (Windows \r\n → Unix \n)
+      const normalized = decoded.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      fs.writeFileSync(tmpCookiesPath, normalized);
       tmpFiles.push(tmpCookiesPath);
       ytdlpArgs.push("--cookies", tmpCookiesPath);
-      console.log(`[process-clip] Cookies carregados via env var`);
+      console.log(`[process-clip] Cookies carregados via env var (base64: ${isBase64})`);
     } else {
       console.log(`[process-clip] Nenhum cookie encontrado, prosseguindo sem autenticação`);
     }
