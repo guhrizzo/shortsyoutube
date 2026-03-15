@@ -81,13 +81,17 @@ def process_clip(req: ClipRequest):
     try:
         # ── 1. Download com yt-dlp ────────────────────────────
         logger.info(f"[{job_id}] Baixando {req.video_id}...")
-        # Salva cookies em arquivo temporário se a variável existir
+        # Usa cookies.txt se existir na raiz do projeto
         cookies_file = None
-        yt_cookies = os.getenv("YT_COOKIES")
-        if yt_cookies:
-            cookies_file = str(tmp_dir / "cookies.txt")
-            with open(cookies_file, "w") as cf:
-                cf.write(yt_cookies)
+        cookies_candidates = [
+            "/app/cookies.txt",       # Railway (Dockerfile copia da raiz)
+            "cookies.txt",            # local
+        ]
+        for candidate in cookies_candidates:
+            if os.path.isfile(candidate):
+                cookies_file = candidate
+                logger.info(f"[{job_id}] Usando cookies: {candidate}")
+                break
 
         ydl_opts = {
             "format": (
