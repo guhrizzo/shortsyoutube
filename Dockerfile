@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     curl \
-    && pip3 install "yt-dlp[default]==2025.3.27" --break-system-packages \
+    && pip3 install "yt-dlp[default]" --pre --break-system-packages \
     && pip3 install bgutil-ytdlp-pot-provider --break-system-packages \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

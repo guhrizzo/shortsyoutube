@@ -10,6 +10,11 @@ import fs from "fs";
 const execFileAsync = promisify(execFile);
 export const maxDuration = 120;
 
+// Configura o servidor bgutil para o plugin de PO Token
+if (process.env.YOUTUBE_PO_TOKEN_SERVER) {
+  process.env.BGUTIL_HTTP_API_ENDPOINT = process.env.YOUTUBE_PO_TOKEN_SERVER;
+}
+
 export async function POST(req: NextRequest) {
   const tmpFiles: string[] = [];
 
@@ -73,13 +78,11 @@ export async function POST(req: NextRequest) {
       "--no-playlist",
       "--no-warnings",
       "--merge-output-format", "mp4",
+      "--extractor-args", "youtube:player_client=web",
     ];
 
     if (poTokenServer) {
-      ytdlpArgs.push(
-        "--extractor-args", `youtube:player_client=web;po_token=web+${poTokenServer}`,
-      );
-      console.log(`[process-clip] PO Token server: ${poTokenServer}`);
+      console.log(`[process-clip] PO Token server configurado: ${poTokenServer}`);
     }
 
     if (tmpCookiesPath) {
@@ -89,7 +92,13 @@ export async function POST(req: NextRequest) {
     console.log(`[process-clip] Iniciando download de ${videoUrl}...`);
 
     try {
-      const { stdout, stderr } = await execFileAsync("yt-dlp", ytdlpArgs, { timeout: 90_000 });
+      const { stdout, stderr } = await execFileAsync("yt-dlp", ytdlpArgs, {
+        timeout: 90_000,
+        env: {
+          ...process.env,
+          BGUTIL_HTTP_API_ENDPOINT: poTokenServer ?? "",
+        },
+      });
       console.log(`[process-clip] yt-dlp stdout: ${stdout}`);
       if (stderr) console.log(`[process-clip] yt-dlp stderr: ${stderr}`);
     } catch (err: any) {
