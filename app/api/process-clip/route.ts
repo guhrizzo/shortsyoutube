@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     const ytdlpArgs = [
       videoUrl,
-      "--format", "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+      "--format", "best",
       "--output", inputPath,
       "--no-playlist",
       "--no-warnings",
