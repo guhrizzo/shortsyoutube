@@ -3,25 +3,25 @@ import os
 import uuid
 import tempfile
 import logging
+import re
+import threading
 from pathlib import Path
 
 import ffmpeg
-import whisper
 import yt_dlp
+from faster_whisper import WhisperModel
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, field_validator
-import re
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("clipai-worker")
 
 app = FastAPI(title="ClipAI Worker")
 
-# Carrega o modelo Whisper uma vez na inicialização (não a cada request)
-WHISPER_MODEL = os.getenv("WHISPER_MODEL", "base")  # base | small | medium | large
-logger.info(f"Carregando modelo Whisper: {WHISPER_MODEL}")
-whisper_model = whisper.load_model(WHISPER_MODEL)
+WHISPER_MODEL_SIZE = os.getenv("WHISPER_MODEL", "base")
+logger.info(f"Carregando modelo Whisper: {WHISPER_MODEL_SIZE}")
+whisper_model = WhisperModel(WHISPER_MODEL_SIZE, device="cpu", compute_type="int8")
 logger.info("Whisper pronto.")
 
 ASPECT_FILTERS = {
@@ -30,7 +30,7 @@ ASPECT_FILTERS = {
     "16:9": "scale=1920:1080:flags=lanczos,setsar=1",
 }
 
-MAX_DURATION = 300  # segundos
+MAX_DURATION = 300
 
 
 class ClipRequest(BaseModel):
@@ -38,7 +38,7 @@ class ClipRequest(BaseModel):
     start_time: float = 0
     end_time: float = 60
     aspect_ratio: str = "9:16"
-    transcribe: bool = True  # gerar legendas via Whisper?
+    transcribe: bool = True
 
     @field_validator("video_id")
     @classmethod
@@ -56,8 +56,8 @@ class ClipRequest(BaseModel):
 
 
 class ClipResponse(BaseModel):
-    clip_url: str           # URL para baixar o vídeo cortado
-    transcript: list[dict]  # [{start, end, text}, ...]
+    clip_url: str
+    transcript: list[dict]
     duration: float
 
 
@@ -86,8 +86,6 @@ def process_clip(req: ClipRequest):
             "outtmpl": str(raw_path),
             "quiet": True,
             "no_warnings": True,
-            # cookies opcionais — coloque cookies.txt fora do repo e aponte aqui
-            # "cookiefile": "/secrets/cookies.txt",
         }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([f"https://www.youtube.com/watch?v={req.video_id}"])
@@ -120,12 +118,10 @@ def process_clip(req: ClipRequest):
         )
         logger.info(f"[{job_id}] Corte OK ({clip_path.stat().st_size / 1024 / 1024:.1f}MB)")
 
-        # ── 3. Transcrição com Whisper ─────────────────────────
+        # ── 3. Transcrição com faster-whisper ─────────────────
         segments: list[dict] = []
         if req.transcribe:
             logger.info(f"[{job_id}] Extraindo áudio para Whisper...")
-
-            # Extrai áudio mono 16kHz (formato ideal para Whisper)
             (
                 ffmpeg
                 .input(str(clip_path))
@@ -134,30 +130,24 @@ def process_clip(req: ClipRequest):
                 .run(quiet=True)
             )
 
-            logger.info(f"[{job_id}] Transcrevendo com Whisper ({WHISPER_MODEL})...")
-            result = whisper_model.transcribe(
+            logger.info(f"[{job_id}] Transcrevendo ({WHISPER_MODEL_SIZE})...")
+            result, _ = whisper_model.transcribe(
                 str(audio_path),
-                language="pt",       # força português; use None para autodetect
+                language="pt",
                 word_timestamps=True,
             )
 
-            # Normaliza segmentos para o formato que o front espera
             segments = [
                 {
-                    "start": round(seg["start"], 2),
-                    "end":   round(seg["end"], 2),
-                    "text":  seg["text"].strip(),
+                    "start": round(seg.start, 2),
+                    "end":   round(seg.end, 2),
+                    "text":  seg.text.strip(),
                 }
-                for seg in result["segments"]
+                for seg in result
             ]
             logger.info(f"[{job_id}] Whisper OK — {len(segments)} segmentos")
 
-        # ── 4. Retorna o arquivo ───────────────────────────────
-        # O Next.js vai fazer GET /clip/{job_id} para baixar
-        # Em produção, suba o clip_path para S3/R2 e retorne a URL assinada
         clip_url = f"/clip-file/{job_id}"
-
-        # Guarda o path para servir depois (em memória — ok para MVP)
         _clip_registry[job_id] = str(clip_path)
 
         return ClipResponse(
@@ -168,24 +158,20 @@ def process_clip(req: ClipRequest):
 
     except Exception as e:
         logger.error(f"[{job_id}] ERRO: {e}")
-        # Limpa arquivos em caso de erro
         for f in [raw_path, clip_path, audio_path]:
             f.unlink(missing_ok=True)
         raise HTTPException(500, str(e))
 
     finally:
-        # Limpa arquivos intermediários (mantém só o clip final até ser baixado)
         raw_path.unlink(missing_ok=True)
         audio_path.unlink(missing_ok=True)
 
 
-# Registry simples para MVP — em produção use Redis ou S3
 _clip_registry: dict[str, str] = {}
 
 
 @app.get("/clip-file/{job_id}")
 def download_clip(job_id: str):
-    # Valida job_id para evitar path traversal
     if not re.fullmatch(r"[a-f0-9-]{36}", job_id):
         raise HTTPException(400, "job_id inválido")
 
@@ -197,16 +183,10 @@ def download_clip(job_id: str):
         Path(path).unlink(missing_ok=True)
         _clip_registry.pop(job_id, None)
 
-    # FileResponse envia o arquivo e depois podemos limpar
-    # (em produção: upload para S3 e delete local)
-    response = FileResponse(
+    threading.Timer(30, cleanup_after).start()
+
+    return FileResponse(
         path,
         media_type="video/mp4",
         filename=f"clipai-{job_id[:8]}.mp4",
-        background=None,
     )
-    # Limpa após envio (workaround simples para MVP)
-    import threading
-    threading.Timer(30, cleanup_after).start()
-
-    return response
