@@ -8,7 +8,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { db } from "@/app/lib/firebase";
 import { doc, updateDoc, increment } from "firebase/firestore";
 
-const COIN_COST = 2; // custo em coins por download
+const COIN_COST = 0; // custo em coins por download
 
 interface DownloadButtonProps {
   clip: Clip;

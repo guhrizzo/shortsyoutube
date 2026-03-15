@@ -10,6 +10,13 @@ import fs from "fs";
 const execFileAsync = promisify(execFile);
 export const maxDuration = 120;
 
+async function downloadFile(url: string, destPath: string): Promise<void> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Falha ao baixar vídeo: ${res.status}`);
+  const buffer = await res.arrayBuffer();
+  fs.writeFileSync(destPath, Buffer.from(buffer));
+}
+
 export async function POST(req: NextRequest) {
   const tmpFiles: string[] = [];
 
@@ -43,101 +50,50 @@ export async function POST(req: NextRequest) {
     const outputPath = path.join(tmpDir, `${id}-output.mp4`);
     tmpFiles.push(inputPath, outputPath);
 
-    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    // ── 1. Busca URL de download via YT-API ───────────────────
+    console.log(`[process-clip] Buscando URL via YT-API...`);
 
-    // ── Cookies via env var ───────────────────────────────────
-    const cookiesContent = process.env.YOUTUBE_COOKIES;
-    let tmpCookiesPath: string | null = null;
-
-    if (cookiesContent) {
-      tmpCookiesPath = path.join(tmpDir, `${id}-cookies.txt`);
-      const isBase64 = /^[A-Za-z0-9+/=]+$/.test(cookiesContent.trim());
-      const decoded = isBase64
-        ? Buffer.from(cookiesContent.trim(), "base64").toString("utf-8")
-        : cookiesContent;
-      const normalized = decoded.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-      fs.writeFileSync(tmpCookiesPath, normalized);
-      tmpFiles.push(tmpCookiesPath);
-      console.log(`[process-clip] Cookies carregados via env var (base64: ${isBase64})`);
-    } else {
-      console.log(`[process-clip] Nenhum cookie encontrado, prosseguindo sem autenticação`);
-    }
-
-    // ── PO Token via bgutil ───────────────────────────────────
-    const poTokenServer = process.env.YOUTUBE_PO_TOKEN_SERVER;
-    let poToken: string | null = null;
-
-    if (poTokenServer) {
-      try {
-        const testRes = await fetch(`${poTokenServer}/get_pot`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ videoId }),
-        });
-        const testData = await testRes.json();
-        poToken = testData.poToken ?? null;
-        console.log(`[process-clip] bgutil poToken obtido: ${poToken?.slice(0, 20)}...`);
-      } catch (e: any) {
-        console.log(`[process-clip] bgutil unreachable: ${e.message}`);
+    const ytApiRes = await fetch(
+      `https://yt-api.p.rapidapi.com/dl?id=${videoId}&cgeo=BR`,
+      {
+        headers: {
+          "x-rapidapi-host": "yt-api.p.rapidapi.com",
+          "x-rapidapi-key": process.env.YTAPI_KEY ?? "",
+        },
       }
+    );
+
+    if (!ytApiRes.ok) {
+      throw new Error(`YT-API erro: ${ytApiRes.status}`);
     }
 
-    // ── 1. Download com yt-dlp ────────────────────────────────
-    const ytdlpArgs = [
-      videoUrl,
-      "--format", "bestvideo+bestaudio/best",
-      "--output", inputPath,
-      "--no-playlist",
-      "--no-warnings",
-      "--merge-output-format", "mp4",
-    ];
+    const ytData = await ytApiRes.json();
 
-    if (poToken) {
-      ytdlpArgs.push(
-        "--extractor-args", `youtube:player_client=web;po_token=web+${poToken}`,
-      );
-      console.log(`[process-clip] Usando PO Token`);
-    } else {
-      ytdlpArgs.push("--extractor-args", "youtube:player_client=web");
+    if (ytData.status !== "OK") {
+      throw new Error(`YT-API retornou status: ${ytData.status}`);
     }
 
-    if (tmpCookiesPath) {
-      ytdlpArgs.push("--cookies", tmpCookiesPath);
+    // Pega o melhor formato mp4 com áudio (itag 22 = 720p, itag 18 = 360p)
+    const formats: any[] = ytData.formats ?? [];
+    const preferred = formats.find((f: any) => f.itag === 22)
+      ?? formats.find((f: any) => f.itag === 18)
+      ?? formats.find((f: any) => f.mimeType?.includes("video/mp4"))
+      ?? formats[0];
+
+    if (!preferred?.url) {
+      throw new Error("Nenhum formato de vídeo disponível na YT-API");
     }
 
-    console.log(`[process-clip] Iniciando download de ${videoUrl}...`);
+    console.log(`[process-clip] Formato selecionado: itag=${preferred.itag} qualidade=${preferred.qualityLabel}`);
 
-    try {
-      const { stdout, stderr } = await execFileAsync("yt-dlp", ytdlpArgs, { timeout: 90_000 });
-      console.log(`[process-clip] yt-dlp stdout: ${stdout}`);
-      if (stderr) console.log(`[process-clip] yt-dlp stderr: ${stderr}`);
-    } catch (err: any) {
-      console.error(`[process-clip] yt-dlp falhou: ${err.message}`);
-      throw new Error(`Falha no download: ${err.message}`);
-    }
+    // ── 2. Download do vídeo ──────────────────────────────────
+    console.log(`[process-clip] Baixando vídeo...`);
+    await downloadFile(preferred.url, inputPath);
 
-    // Verifica se o arquivo foi criado (yt-dlp pode mudar a extensão)
-    let actualInput = inputPath;
-    if (!fs.existsSync(inputPath)) {
-      console.log(`[process-clip] Arquivo não encontrado em ${inputPath}, buscando alternativas...`);
-      const extensions = [".mkv", ".webm", ".mp4"];
-      const base = inputPath.replace(".mp4", "");
-      const found = extensions.map(ext => base + ext).find(f => fs.existsSync(f));
-      if (found) {
-        actualInput = found;
-        tmpFiles.push(found);
-        console.log(`[process-clip] Arquivo encontrado em: ${actualInput}`);
-      } else {
-        const files = fs.readdirSync(tmpDir).filter(f => f.includes(id));
-        console.error(`[process-clip] Arquivos com ID ${id}: ${files.join(", ")}`);
-        throw new Error("Arquivo de vídeo não encontrado após download.");
-      }
-    }
-
-    const inputSize = fs.statSync(actualInput).size;
+    const inputSize = fs.statSync(inputPath).size;
     console.log(`[process-clip] Download OK. Tamanho: ${(inputSize / 1024 / 1024).toFixed(1)}MB`);
 
-    // ── 2. Processa com FFmpeg ────────────────────────────────
+    // ── 3. Processa com FFmpeg ────────────────────────────────
     console.log(`[process-clip] Iniciando FFmpeg: ${startTime}s → ${endTime}s em ${aspectRatio}...`);
 
     const vfFilters: Record<string, string> = {
@@ -150,7 +106,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const { stdout, stderr } = await execFileAsync("ffmpeg", [
-        "-i", actualInput,
+        "-i", inputPath,
         "-ss", String(startTime),
         "-t", String(duration),
         "-vf", vf,
