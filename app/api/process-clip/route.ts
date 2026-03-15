@@ -10,11 +10,6 @@ import fs from "fs";
 const execFileAsync = promisify(execFile);
 export const maxDuration = 120;
 
-// Configura o servidor bgutil para o plugin de PO Token
-if (process.env.YOUTUBE_PO_TOKEN_SERVER) {
-  process.env.BGUTIL_HTTP_API_ENDPOINT = process.env.YOUTUBE_PO_TOKEN_SERVER;
-}
-
 export async function POST(req: NextRequest) {
   const tmpFiles: string[] = [];
 
@@ -68,8 +63,9 @@ export async function POST(req: NextRequest) {
       console.log(`[process-clip] Nenhum cookie encontrado, prosseguindo sem autenticação`);
     }
 
-    // ── Testa conectividade com o servidor bgutil ─────────────
+    // ── PO Token via bgutil ───────────────────────────────────
     const poTokenServer = process.env.YOUTUBE_PO_TOKEN_SERVER;
+    let poToken: string | null = null;
 
     if (poTokenServer) {
       try {
@@ -79,7 +75,8 @@ export async function POST(req: NextRequest) {
           body: JSON.stringify({ videoId }),
         });
         const testData = await testRes.json();
-        console.log(`[process-clip] bgutil response: ${JSON.stringify(testData)}`);
+        poToken = testData.poToken ?? null;
+        console.log(`[process-clip] bgutil poToken obtido: ${poToken?.slice(0, 20)}...`);
       } catch (e: any) {
         console.log(`[process-clip] bgutil unreachable: ${e.message}`);
       }
@@ -93,11 +90,15 @@ export async function POST(req: NextRequest) {
       "--no-playlist",
       "--no-warnings",
       "--merge-output-format", "mp4",
-      "--extractor-args", "youtube:player_client=web",
     ];
 
-    if (poTokenServer) {
-      console.log(`[process-clip] PO Token server configurado: ${poTokenServer}`);
+    if (poToken) {
+      ytdlpArgs.push(
+        "--extractor-args", `youtube:player_client=web;po_token=web+${poToken}`,
+      );
+      console.log(`[process-clip] Usando PO Token`);
+    } else {
+      ytdlpArgs.push("--extractor-args", "youtube:player_client=web");
     }
 
     if (tmpCookiesPath) {
@@ -107,13 +108,7 @@ export async function POST(req: NextRequest) {
     console.log(`[process-clip] Iniciando download de ${videoUrl}...`);
 
     try {
-      const { stdout, stderr } = await execFileAsync("yt-dlp", ytdlpArgs, {
-        timeout: 90_000,
-        env: {
-          ...process.env,
-          BGUTIL_HTTP_API_ENDPOINT: poTokenServer ?? "",
-        },
-      });
+      const { stdout, stderr } = await execFileAsync("yt-dlp", ytdlpArgs, { timeout: 90_000 });
       console.log(`[process-clip] yt-dlp stdout: ${stdout}`);
       if (stderr) console.log(`[process-clip] yt-dlp stderr: ${stderr}`);
     } catch (err: any) {
