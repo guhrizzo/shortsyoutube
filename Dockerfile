@@ -1,12 +1,11 @@
 FROM node:20-slim
 
-# force rebuild yt-dlp - v3
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     python3 \
     python3-pip \
     curl \
-    && pip3 install -U "yt-dlp[default]" --break-system-packages \
+    && pip3 install "yt-dlp[default]==2025.3.27" --break-system-packages \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -17,7 +16,6 @@ RUN npm ci
 
 COPY . .
 
-# Declara os ARGs para receber as vars do Railway no build
 ARG NEXT_PUBLIC_FIREBASE_API_KEY
 ARG NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
 ARG NEXT_PUBLIC_FIREBASE_PROJECT_ID
@@ -25,7 +23,6 @@ ARG NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
 ARG NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
 ARG NEXT_PUBLIC_FIREBASE_APP_ID
 
-# Expõe como ENV para o Next.js conseguir embutir no bundle
 ENV NEXT_PUBLIC_FIREBASE_API_KEY=$NEXT_PUBLIC_FIREBASE_API_KEY
 ENV NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=$NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
 ENV NEXT_PUBLIC_FIREBASE_PROJECT_ID=$NEXT_PUBLIC_FIREBASE_PROJECT_ID
