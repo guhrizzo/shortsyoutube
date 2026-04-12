@@ -2,6 +2,7 @@
 
 // app/components/Navbar.tsx
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Scissors, Menu, X } from "lucide-react";
 import { UserMenu } from "./UserMenu";
 
@@ -9,7 +10,15 @@ interface NavbarProps {
   onScrollToSection?: (id: string) => void;
 }
 
+interface NavLink {
+  label: string;
+  type: "scroll" | "redirect";
+  id?: string;
+  href?: string;
+}
+
 export function Navbar({ onScrollToSection }: NavbarProps) {
+  const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -25,10 +34,19 @@ export function Navbar({ onScrollToSection }: NavbarProps) {
     setMobileMenuOpen(false);
   }
 
-  const navLinks = [
-    { label: "Recursos", id: "features" },
-    { label: "Como Funciona", id: "how-it-works" },
-    { label: "Preços", id: "pricing" },
+  function handleNavigation(link: NavLink) {
+    if (link.type === "scroll" && link.id) {
+      scrollToSection(link.id);
+    } else if (link.type === "redirect" && link.href) {
+      setMobileMenuOpen(false);
+      router.push(link.href);
+    }
+  }
+
+  const navLinks: NavLink[] = [
+    { label: "Recursos", type: "scroll", id: "features" },
+    { label: "Como Funciona", type: "scroll", id: "how-it-works" },
+    { label: "Preços", type: "redirect", href: "/coins" },
   ];
 
   return (
@@ -54,13 +72,13 @@ export function Navbar({ onScrollToSection }: NavbarProps) {
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-8">
-          {navLinks.map(({ label, id }) => (
+          {navLinks.map((link) => (
             <button
-              key={id}
-              onClick={() => scrollToSection(id)}
+              key={link.label}
+              onClick={() => handleNavigation(link)}
               className="text-sm text-gray-400 hover:text-white transition-colors cursor-pointer relative group"
             >
-              {label}
+              {link.label}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-500 group-hover:w-full transition-all duration-300 rounded-full" />
             </button>
           ))}
@@ -84,16 +102,16 @@ export function Navbar({ onScrollToSection }: NavbarProps) {
         </button>
       </div>
 
-      {/* Mobile menu */}
+       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-full left-0 right-0 bg-[#030305]/97 backdrop-blur-xl border-b border-white/10 p-6 flex flex-col gap-2 animate-in slide-in-from-top-3 duration-200">
-          {navLinks.map(({ label, id }) => (
+          {navLinks.map((link) => (
             <button
-              key={id}
-              onClick={() => scrollToSection(id)}
+              key={link.label}
+              onClick={() => handleNavigation(link)}
               className="text-left text-gray-300 hover:text-white hover:bg-white/5 px-3 py-2.5 rounded-lg transition-all"
             >
-              {label}
+              {link.label}
             </button>
           ))}
           <hr className="border-white/10 my-2" />
